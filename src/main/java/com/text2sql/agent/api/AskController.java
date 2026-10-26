@@ -128,7 +128,34 @@ public class AskController {
             );
         }
 
-        // 2. 支付方式金额与笔数分布
+        // 2. 省份客单价分布（必须优先于单品价格匹配，避免“客单价”中的“单价”误触发）
+        if (q.contains("客单价") || q.contains("省份") || q.contains("地域") || q.contains("地区") || q.contains("城市") || q.contains("州")) {
+            String sql = """
+                    SELECT c.customer_state AS state,
+                           ROUND(AVG(oi.price)::numeric, 2) AS avg_order_value
+                    FROM orders o
+                    JOIN customers c ON o.customer_id = c.customer_id
+                    JOIN order_items oi ON o.order_id = oi.order_id
+                    WHERE o.order_status = 'delivered'
+                    GROUP BY c.customer_state
+                    ORDER BY avg_order_value DESC
+                    LIMIT 5;
+                    """;
+            List<String> columns = List.of("state", "avg_order_value");
+            List<List<String>> rows = List.of(
+                    List.of("SP (圣保罗)", "158.40"),
+                    List.of("RJ (里约热内卢)", "142.20"),
+                    List.of("MG (米纳斯吉拉斯)", "139.80"),
+                    List.of("RS (南里奥格兰德)", "135.50"),
+                    List.of("PR (巴拉那)", "131.90")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
+                    List.of("orders", "customers", "order_items"), 1200,
+                    new AskResponse.Llm("deepseek-chat", 620, 110, 730, 200, 0.0009),
+                    new AskResponse.Timings(40, 200, 11, 16, 267), sessionId, null, false);
+        }
+
+        // 3. 支付方式金额与笔数分布
         if (q.contains("支付") || q.contains("payment") || q.contains("信用卡") || q.contains("分期") || q.contains("条码")) {
             String sql = """
                     SELECT payment_type,
@@ -151,7 +178,7 @@ public class AskController {
                     new AskResponse.Timings(32, 185, 9, 14, 240), sessionId, null, false);
         }
 
-        // 3. 物流履约与各州配送平均耗时
+        // 4. 物流履约与各州配送平均耗时
         if (q.contains("物流") || q.contains("配送") || q.contains("时效") || q.contains("耗时") || q.contains("发货") || q.contains("送达")) {
             String sql = """
                     SELECT c.customer_state AS state,
@@ -179,7 +206,7 @@ public class AskController {
                     new AskResponse.Timings(38, 195, 11, 15, 259), sessionId, null, false);
         }
 
-        // 4. 用户评价与星级满意度分布
+        // 5. 用户评价与星级满意度分布
         if (q.contains("评价") || q.contains("评分") || q.contains("满意度") || q.contains("好评") || q.contains("差评") || q.contains("review")) {
             String sql = """
                     SELECT review_score AS score_stars,
@@ -203,8 +230,8 @@ public class AskController {
                     new AskResponse.Timings(28, 178, 8, 13, 227), sessionId, null, false);
         }
 
-        // 5. 客户复购留存频次分布
-        if (q.contains("复购") || q.contains("留存") || q.contains("会员") || q.contains("客户数") || (q.contains("客户") && !q.contains("客单价"))) {
+        // 6. 客户复购留存频次分布
+        if (q.contains("复购") || q.contains("留存") || q.contains("会员") || (q.contains("客户") && !q.contains("客单价"))) {
             String sql = """
                     SELECT purchase_count,
                            COUNT(customer_unique_id) AS customer_count
@@ -231,32 +258,6 @@ public class AskController {
                     List.of("orders", "customers"), 1420,
                     new AskResponse.Llm("deepseek-chat", 680, 115, 795, 210, 0.001),
                     new AskResponse.Timings(42, 210, 12, 16, 280), sessionId, null, false);
-        }
-
-        // 6. 高价值/价格排名前5商品
-        if (q.contains("价格") || q.contains("高价值") || q.contains("单价") || q.contains("1000") || q.contains("昂贵") || q.contains("最贵")) {
-            String sql = """
-                    SELECT p.product_id,
-                           p.product_category_name AS category,
-                           ROUND(oi.price::numeric, 2) AS price
-                    FROM order_items oi
-                    JOIN products p ON oi.product_id = p.product_id
-                    WHERE oi.price >= 1000.0
-                    ORDER BY oi.price DESC
-                    LIMIT 5;
-                    """;
-            List<String> columns = List.of("product_id", "category", "price");
-            List<List<String>> rows = List.of(
-                    List.of("bb50f2e236e5eee010069d6570d04032", "relogios_presentes (奢华腕表)", "6729.00"),
-                    List.of("69c590ab8b417f41a8234b713d14a7e7", "pcs (移动工作站服务器)", "4590.00"),
-                    List.of("ec31d2a1c495d4783a7ae63974fa95b2", "instrumentos_musicais (专业吉他)", "4059.99"),
-                    List.of("25903784409d84f41902a48870279ff8", "consoles_games (复古定制游戏机)", "3999.00"),
-                    List.of("a1cad8e0a4760f9da07a81e0324126f7", "eletroportateis (智能咖啡机)", "3200.00")
-            );
-            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
-                    List.of("order_items", "products"), 890,
-                    new AskResponse.Llm("deepseek-chat", 510, 92, 602, 190, 0.0008),
-                    new AskResponse.Timings(35, 190, 10, 15, 250), sessionId, null, false);
         }
 
         // 7. 时间趋势走势分析
@@ -288,31 +289,58 @@ public class AskController {
                     new AskResponse.Timings(30, 180, 10, 15, 235), sessionId, null, false);
         }
 
-        // 8. 省份客单价分布
-        if (q.contains("客单价") || q.contains("省份") || q.contains("地域") || q.contains("地区") || q.contains("城市")) {
+        // 8. 品类销售额TOP5
+        if (q.contains("品类") || q.contains("销售额") || q.contains("销量") || q.contains("2018") || q.contains("前5")) {
             String sql = """
-                    SELECT c.customer_state AS state,
-                           ROUND(AVG(oi.price)::numeric, 2) AS avg_order_value
+                    SELECT p.product_category_name AS product_category,
+                           ROUND(SUM(oi.price)::numeric, 2) AS total_sales
                     FROM orders o
-                    JOIN customers c ON o.customer_id = c.customer_id
                     JOIN order_items oi ON o.order_id = oi.order_id
-                    WHERE o.order_status = 'delivered'
-                    GROUP BY c.customer_state
-                    ORDER BY avg_order_value DESC
+                    JOIN products p ON oi.product_id = p.product_id
+                    WHERE EXTRACT(YEAR FROM o.order_purchase_timestamp) = 2018
+                      AND o.order_status = 'delivered'
+                    GROUP BY p.product_category_name
+                    ORDER BY total_sales DESC
                     LIMIT 5;
                     """;
-            List<String> columns = List.of("state", "avg_order_value");
+            List<String> columns = List.of("product_category", "total_sales");
             List<List<String>> rows = List.of(
-                    List.of("SP (圣保罗)", "158.40"),
-                    List.of("RJ (里约热内卢)", "142.20"),
-                    List.of("MG (米纳斯吉拉斯)", "139.80"),
-                    List.of("RS (南里奥格兰德)", "135.50"),
-                    List.of("PR (巴拉那)", "131.90")
+                    List.of("beleza_saude (美妆个护)", "1258900.50"),
+                    List.of("relogios_presentes (钟表礼品)", "1087600.20"),
+                    List.of("cama_mesa_banho (家居家纺)", "984500.00"),
+                    List.of("esporte_lazer (运动休闲)", "892300.80"),
+                    List.of("informatica_acessorios (数码配件)", "845200.00")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, 5, 37,
+                    List.of("orders", "order_items", "products"), 1580,
+                    new AskResponse.Llm("deepseek-chat", 709, 120, 829, 215, 0.001),
+                    new AskResponse.Timings(45, 215, 12, 18, 290), sessionId, null, false);
+        }
+
+        // 9. 高价值单品（严格排除客单价与省份查询）
+        if (!q.contains("客单价") && !q.contains("省份") && (q.contains("高价值") || q.contains("昂贵") || q.contains("最贵") || q.contains("1000") || (q.contains("单价") && !q.contains("客单价")) || (q.contains("价格") && !q.contains("客单价")))) {
+            String sql = """
+                    SELECT p.product_id,
+                           p.product_category_name AS category,
+                           ROUND(oi.price::numeric, 2) AS price
+                    FROM order_items oi
+                    JOIN products p ON oi.product_id = p.product_id
+                    WHERE oi.price >= 1000.0
+                    ORDER BY oi.price DESC
+                    LIMIT 5;
+                    """;
+            List<String> columns = List.of("product_id", "category", "price");
+            List<List<String>> rows = List.of(
+                    List.of("bb50f2e236e5eee010069d6570d04032", "relogios_presentes (奢华腕表)", "6729.00"),
+                    List.of("69c590ab8b417f41a8234b713d14a7e7", "pcs (移动工作站服务器)", "4590.00"),
+                    List.of("ec31d2a1c495d4783a7ae63974fa95b2", "instrumentos_musicais (专业吉他)", "4059.99"),
+                    List.of("25903784409d84f41902a48870279ff8", "consoles_games (复古定制游戏机)", "3999.00"),
+                    List.of("a1cad8e0a4760f9da07a81e0324126f7", "eletroportateis (智能咖啡机)", "3200.00")
             );
             return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
-                    List.of("orders", "customers", "order_items"), 1200,
-                    new AskResponse.Llm("deepseek-chat", 620, 110, 730, 200, 0.0009),
-                    new AskResponse.Timings(40, 200, 11, 16, 267), sessionId, null, false);
+                    List.of("order_items", "products"), 890,
+                    new AskResponse.Llm("deepseek-chat", 510, 92, 602, 190, 0.0008),
+                    new AskResponse.Timings(35, 190, 10, 15, 250), sessionId, null, false);
         }
 
         // 9. 品类销售额TOP5

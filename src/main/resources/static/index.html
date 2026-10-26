@@ -1146,9 +1146,11 @@
       container.innerHTML += html;
 
       if (rows && rows.length > 0) {
-        setTimeout(() => initAiChart(chartId, columns, rows), 50);
+        aiChartRegistry[chartId] = { columns, rows };
       }
     }
+
+    const aiChartRegistry = {};
 
     function toggleAiView(chartId, showChart) {
       const chartEl = document.getElementById(chartId);
@@ -1156,7 +1158,11 @@
       if (showChart) {
         chartEl.style.display = 'block';
         tableEl.style.display = 'none';
-        echarts.getInstanceByDom(chartEl)?.resize();
+
+        const cfg = aiChartRegistry[chartId];
+        if (cfg) {
+          initAiChart(chartId, cfg.columns, cfg.rows);
+        }
       } else {
         chartEl.style.display = 'none';
         tableEl.style.display = 'block';
@@ -1166,27 +1172,95 @@
     function initAiChart(chartId, columns, rows) {
       const chartEl = document.getElementById(chartId);
       if (!chartEl) return;
-      const myChart = echarts.init(chartEl);
+
+      let myChart = echarts.getInstanceByDom(chartEl);
+      if (!myChart) {
+        myChart = echarts.init(chartEl);
+      }
 
       const isArrayRow = rows.length > 0 && Array.isArray(rows[0]);
-      const xCol = columns[0];
-      const yCol = columns[1] || columns[0];
-      const xData = rows.map(r => isArrayRow ? r[0] : r[xCol]);
-      const yData = rows.map(r => isArrayRow ? (Number(r[1]) || 0) : (Number(r[yCol]) || 0));
+
+      // 1. 智能查找数值指标列 (Y轴)
+      let yIdx = -1;
+      for (let i = columns.length - 1; i >= 0; i--) {
+        const val = isArrayRow ? rows[0][i] : rows[0][columns[i]];
+        const numStr = String(val || '').replace(/[^\d.-]/g, '');
+        if (numStr !== '' && !isNaN(parseFloat(numStr))) {
+          yIdx = i;
+          break;
+        }
+      }
+      if (yIdx === -1) yIdx = columns.length > 1 ? 1 : 0;
+
+      // 2. 智能查找维度列 (X轴标签，尽量避开无意义的散列 ID)
+      let xIdx = 0;
+      for (let i = 0; i < columns.length; i++) {
+        if (i === yIdx) continue;
+        const colName = String(columns[i]).toLowerCase();
+        if (colName.includes('id') && columns.length > 2) {
+          continue; // 优先跳过 ID 列
+        }
+        xIdx = i;
+        break;
+      }
+
+      const xCol = columns[xIdx];
+      const yCol = columns[yIdx];
+
+      const xData = rows.map(r => {
+        const raw = isArrayRow ? r[xIdx] : r[xCol];
+        return String(raw || '');
+      });
+
+      const yData = rows.map(r => {
+        const raw = isArrayRow ? r[yIdx] : r[yCol];
+        const numStr = String(raw || '').replace(/[^\d.-]/g, '');
+        const val = parseFloat(numStr);
+        return isNaN(val) ? 0 : val;
+      });
 
       myChart.setOption({
-        title: { text: '查询统计自动可视化', left: 'center', textStyle: { fontSize: 13 } },
-        tooltip: { trigger: 'axis' },
-        grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
-        xAxis: { type: 'category', data: xData, axisLabel: { interval: 0, rotate: 20, fontSize: 11 } },
+        title: { text: '查询统计自动可视化', left: 'center', textStyle: { fontSize: 13, color: '#333' } },
+        tooltip: {
+          trigger: 'axis',
+          formatter: function(params) {
+            const p = params[0];
+            return `${p.name}<br/>${yCol}: <b>${p.value}</b>`;
+          }
+        },
+        grid: { left: '4%', right: '4%', bottom: '20%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: xData,
+          axisLabel: {
+            interval: 0,
+            rotate: 20,
+            fontSize: 11,
+            formatter: function(val) {
+              return val.length > 16 ? val.substring(0, 14) + '...' : val;
+            }
+          }
+        },
         yAxis: { type: 'value' },
         series: [{
           name: yCol,
           type: 'bar',
           data: yData,
-          itemStyle: { color: '#1890ff', borderRadius: [4, 4, 0, 0] }
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#1890ff' },
+              { offset: 1, color: '#36cfc9' }
+            ]),
+            borderRadius: [4, 4, 0, 0]
+          },
+          label: {
+            show: true,
+            position: 'top',
+            fontSize: 11
+          }
         }]
       });
+      setTimeout(() => myChart.resize(), 30);
     }
 
     // ================= 悬浮 Copilot 抽屉 =================
