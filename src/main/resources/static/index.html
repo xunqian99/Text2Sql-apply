@@ -1382,13 +1382,13 @@
       <div>
         <div style="font-size: 12px; font-weight: 700; color: #606266; margin-bottom: 6px;">⚡ 快速提问标签：</div>
         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-          <span class="query-tag-pill" onclick="askAiQuery('2018年销售额最高的前5个商品品类是什么？')">📈 品类销售额TOP5</span>
-          <span class="query-tag-pill" onclick="askAiQuery('统计2017到2018年每个月的订单总量趋势')">📅 月度订单走势</span>
-          <span class="query-tag-pill" onclick="askAiQuery('统计各种支付方式的订单金额与笔数分布')">💳 支付方式占比</span>
-          <span class="query-tag-pill" onclick="askAiQuery('统计不同购买频次的客户复购留存人数分布')">👥 客户复购留存</span>
-          <span class="query-tag-pill" onclick="askAiQuery('各省份的客单价分布排名前5是哪些？')">🏙️ 省份客单价分布</span>
-          <span class="query-tag-pill" onclick="askAiQuery('统计各省份的订单平均配送耗时（天数）排行')">🚚 配送时效排行</span>
-          <span class="query-tag-pill" onclick="askAiQuery('单价在1000元以上的高价值热销商品有哪些？')">💎 1000元以上商品</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('2018年销售额最高的前5个商品品类是什么？')">📈 品类销售额TOP5</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('统计2017到2018年每个月的订单总量趋势')">📅 月度订单走势</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('统计各种支付方式的订单金额与笔数分布')">💳 支付方式占比</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('统计不同购买频次的客户复购留存人数分布')">👥 客户复购留存</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('各省份的客单价分布排名前5是哪些？')">🏙️ 省份客单价分布</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('统计各省份的订单平均配送耗时（天数）排行')">🚚 配送时效排行</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('单价在1000元以上的高价值热销商品有哪些？')">💎 1000元以上商品</span>
         </div>
       </div>
     </div>
@@ -2199,8 +2199,19 @@
 
     // ================= AI 问数模块 (Text2SQL Agent) =================
     function askAiQuery(q) {
+      const drawer = document.getElementById('copilotDrawer');
+      if (drawer && drawer.classList.contains('active')) {
+        askDrawerQuery(q);
+        return;
+      }
       document.getElementById('aiQuestionInput').value = q;
       submitMainAiQuery();
+    }
+
+    function askDrawerQuery(q) {
+      const input = document.getElementById('drawerInput');
+      if (input) input.value = q;
+      submitDrawerAiQuery();
     }
 
     async function submitMainAiQuery() {
