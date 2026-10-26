@@ -12,8 +12,9 @@ spring:
     password: text2sql
     hikari:
       maximum-pool-size: 10
-      minimum-idle: 2
-      connection-timeout: 10000
+      minimum-idle: 1
+      connection-timeout: 1500
+      initialization-fail-timeout: -1
 
   # 显式关闭 Spring AI 的全局自动注入模型（避免启动时因未配 Key 导致容器启动失败）
   ai:
