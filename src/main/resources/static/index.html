@@ -4,13 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>某某电商集团 · 供应链数仓运营中台 (ERP/OMS V4.5)</title>
-  <!-- ECharts 5 统计图表库与 WebGL 三维图表扩展库 (ECharts-GL) -->
+  <!-- ECharts 5 统计图表库 -->
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
   <!-- RemixIcon 专业企业级矢量图标库 (v4.2.0) -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
   <style>
-    /* ================= 专业图标库与三维图表辅助样式 ================= */
+    /* ================= 专业矢量图标库辅助样式 ================= */
     i[class^="ri-"], i[class*=" ri-"] {
       vertical-align: -0.14em;
       line-height: 1;
@@ -25,19 +24,6 @@
     .query-tag-pill i {
       margin-right: 4px;
       font-size: 12.5px;
-    }
-    .chart-3d-hint {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 8px;
-      font-size: 12px;
-      color: #409eff;
-      background: #ecf5ff;
-      border: 1px dashed #b3d8ff;
-      border-radius: 4px;
-      padding: 6px 12px;
     }
     /* ================= 经典5年企业级中台 (Element UI / 若依 / RuoYi 风格) ================= */
     :root {
@@ -1280,7 +1266,7 @@
           <div style="background: #f8fafc; border: 1px dashed #dcdfe6; border-radius: 4px; padding: 12px 14px; margin-bottom: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <span style="font-weight: 700; color: #303133; font-size: 12.5px;"><i class="ri-lightbulb-line" style="color: #e6a23c; margin-right: 4px;"></i> 点击快捷检索数仓全量数据（涵盖 37 张表 / 150 万真实电商样本）：</span>
-              <span class="el-tag el-tag-primary"><i class="ri-bar-chart-box-line"></i> 支持表格与 ECharts 2D/3D 图表自由切换</span>
+              <span class="el-tag el-tag-primary"><i class="ri-bar-chart-box-line"></i> 支持数据明细与统计图表自由切换</span>
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -2270,7 +2256,7 @@
         });
         const data = await res.json();
         document.getElementById(loadId)?.remove();
-        renderAiResult(chatArea, data, q);
+        renderAiResult(chatArea, data);
       } catch (e) {
         document.getElementById(loadId)?.remove();
         chatArea.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" style="border-left: 3px solid #f56c6c;"><b style="color: #f56c6c;">请求失败:</b> ${e.message}</div>`);
@@ -2278,7 +2264,7 @@
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    function renderAiResult(container, resp, userQuery = '') {
+    function renderAiResult(container, resp) {
       chartCounter++;
       const chartId = 'aiChart-' + chartCounter;
       const isOk = resp.status === 'SUCCESS';
@@ -2301,14 +2287,11 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
             <span class="el-tag el-tag-success"><i class="ri-checkbox-circle-line"></i> 数仓计算完成 (耗时: ${ms}ms)</span>
             <div class="view-segmented-group" id="btn-group-${chartId}">
-              <button class="view-segmented-btn active" id="btn-table-${chartId}" onclick="toggleAiView('${chartId}', 'table')">
-                <i class="ri-table-line"></i> 表格明细
+              <button class="view-segmented-btn active" id="btn-table-${chartId}" onclick="toggleAiView('${chartId}', false)">
+                <i class="ri-table-line"></i> 表格视图
               </button>
-              <button class="view-segmented-btn" id="btn-chart-${chartId}" onclick="toggleAiView('${chartId}', '2d')">
-                <i class="ri-bar-chart-2-line"></i> 2D 平面图表
-              </button>
-              <button class="view-segmented-btn" id="btn-chart3d-${chartId}" onclick="toggleAiView('${chartId}', '3d')">
-                <i class="ri-box-3-line"></i> 3D 三维坐标系
+              <button class="view-segmented-btn" id="btn-chart-${chartId}" onclick="toggleAiView('${chartId}', true)">
+                <i class="ri-bar-chart-2-line"></i> 统计图表视图
               </button>
             </div>
           </div>
@@ -2329,10 +2312,6 @@
             </table>
           </div>
           <div id="${chartId}" style="height: 350px; width: 100%; display: none; margin-top: 12px;"></div>
-          <div id="hint-3d-${chartId}" class="chart-3d-hint" style="display: none;">
-            <i class="ri-compass-3-line"></i>
-            <span>已启用 WebGL 三维空间直角坐标系 (X-Y-Z 轴立体投影)。支持按住鼠标左键 360° 旋转视角、滚轮缩放、右键平移。</span>
-          </div>
         `;
       }
 
@@ -2340,55 +2319,33 @@
       container.insertAdjacentHTML('beforeend', html);
 
       if (rows && rows.length > 0) {
-        aiChartRegistry[chartId] = { columns, rows, activeMode: 'table' };
-        // 如果提问中明确要求三维或 3D，自动开启 3D 三维坐标系视图
-        if (userQuery && /(三维|3d|立体|坐标系)/i.test(userQuery)) {
-          setTimeout(() => toggleAiView(chartId, '3d'), 50);
-        }
+        aiChartRegistry[chartId] = { columns, rows };
       }
     }
 
     const aiChartRegistry = {};
 
-    function toggleAiView(chartId, mode) {
+    function toggleAiView(chartId, showChart) {
       const chartEl = document.getElementById(chartId);
       const tableEl = document.getElementById('table-wrap-' + chartId);
-      const hint3dEl = document.getElementById('hint-3d-' + chartId);
       const btnTable = document.getElementById('btn-table-' + chartId);
       const btnChart = document.getElementById('btn-chart-' + chartId);
-      const btnChart3d = document.getElementById('btn-chart3d-' + chartId);
 
-      // 兼容旧版布尔值入参
-      if (mode === true) mode = '2d';
-      if (mode === false) mode = 'table';
-
-      const cfg = aiChartRegistry[chartId];
-      if (!cfg) return;
-      cfg.activeMode = mode;
-
-      if (mode === 'table') {
-        if (chartEl) chartEl.style.display = 'none';
-        if (tableEl) tableEl.style.display = 'block';
-        if (hint3dEl) hint3dEl.style.display = 'none';
-        if (btnTable) btnTable.classList.add('active');
-        if (btnChart) btnChart.classList.remove('active');
-        if (btnChart3d) btnChart3d.classList.remove('active');
-      } else if (mode === '2d') {
+      if (showChart) {
         if (chartEl) chartEl.style.display = 'block';
         if (tableEl) tableEl.style.display = 'none';
-        if (hint3dEl) hint3dEl.style.display = 'none';
         if (btnTable) btnTable.classList.remove('active');
         if (btnChart) btnChart.classList.add('active');
-        if (btnChart3d) btnChart3d.classList.remove('active');
-        initAiChart(chartId, cfg.columns, cfg.rows);
-      } else if (mode === '3d') {
-        if (chartEl) chartEl.style.display = 'block';
-        if (tableEl) tableEl.style.display = 'none';
-        if (hint3dEl) hint3dEl.style.display = 'flex';
-        if (btnTable) btnTable.classList.remove('active');
+
+        const cfg = aiChartRegistry[chartId];
+        if (cfg) {
+          initAiChart(chartId, cfg.columns, cfg.rows);
+        }
+      } else {
+        if (chartEl) chartEl.style.display = 'none';
+        if (tableEl) tableEl.style.display = 'block';
+        if (btnTable) btnTable.classList.add('active');
         if (btnChart) btnChart.classList.remove('active');
-        if (btnChart3d) btnChart3d.classList.add('active');
-        initAiChart3D(chartId, cfg.columns, cfg.rows);
       }
     }
 
@@ -2398,13 +2355,10 @@
 
       chartEl.style.height = '350px';
 
-      // 切换视图时清空旧实例，防止 Canvas 与 WebGL 上下文发生图层冲突
-      try {
-        const existing = echarts.getInstanceByDom(chartEl);
-        if (existing) existing.dispose();
-      } catch (e) { console.warn(e); }
-
-      const myChart = echarts.init(chartEl);
+      let myChart = echarts.getInstanceByDom(chartEl);
+      if (!myChart) {
+        myChart = echarts.init(chartEl);
+      }
 
       const isArrayRow = rows.length > 0 && Array.isArray(rows[0]);
 
@@ -2524,187 +2478,6 @@
       setTimeout(() => myChart.resize(), 30);
     }
 
-    // ================= ECharts GL 三维空间直角坐标系 (3D Bar Chart) =================
-    function initAiChart3D(chartId, columns, rows) {
-      const chartEl = document.getElementById(chartId);
-      if (!chartEl) return;
-
-      chartEl.style.height = '400px';
-
-      // 切换至 WebGL 实例前彻底清理 2D Canvas 实例
-      try {
-        const existing = echarts.getInstanceByDom(chartEl);
-        if (existing) existing.dispose();
-      } catch (e) { console.warn(e); }
-
-      const myChart = echarts.init(chartEl);
-
-      const isArrayRow = rows.length > 0 && Array.isArray(rows[0]);
-
-      let yIdx = -1;
-      for (let i = columns.length - 1; i >= 0; i--) {
-        const val = isArrayRow ? rows[0][i] : rows[0][columns[i]];
-        const numStr = String(val || '').replace(/[^\d.-]/g, '');
-        if (numStr !== '' && !isNaN(parseFloat(numStr))) {
-          yIdx = i;
-          break;
-        }
-      }
-      if (yIdx === -1) yIdx = columns.length > 1 ? 1 : 0;
-
-      let xIdx = 0;
-      for (let i = 0; i < columns.length; i++) {
-        if (i === yIdx) continue;
-        const colName = String(columns[i]).toLowerCase();
-        if (colName.includes('id') && columns.length > 2) continue;
-        xIdx = i;
-        break;
-      }
-
-      const xCol = columns[xIdx];
-      const yCol = columns[yIdx];
-
-      const xData = rows.map(r => {
-        const raw = isArrayRow ? r[xIdx] : r[xCol];
-        return String(raw || '');
-      });
-
-      const yData = rows.map(r => {
-        const raw = isArrayRow ? r[yIdx] : r[yCol];
-        const numStr = String(raw || '').replace(/[^\d.-]/g, '');
-        const val = parseFloat(numStr);
-        return isNaN(val) ? 0 : val;
-      });
-
-      const maxVal = Math.max(...yData, 1);
-
-      const option3D = {
-        title: {
-          text: '三维空间直角坐标系 (' + yCol + ')',
-          subtext: 'X 轴: ' + xCol + ' | Y 轴: 空间维度 | Z 轴: ' + yCol + ' (三维柱体)',
-          left: 'center',
-          top: 6,
-          textStyle: { fontSize: 13, fontWeight: '700', color: '#303133' },
-          subtextStyle: { fontSize: 11, color: '#909399' }
-        },
-        tooltip: {
-          show: true,
-          formatter: function(params) {
-            const idx = params.value[0];
-            const name = xData[idx] || '';
-            const val = Number(params.value[2]).toLocaleString();
-            return `<b>${name}</b><br/>${yCol}: <b>${val}</b>`;
-          }
-        },
-        visualMap: {
-          show: true,
-          min: 0,
-          max: maxVal,
-          inRange: {
-            color: ['#80c1ff', '#409eff', '#1989fa', '#0052cc']
-          },
-          textStyle: { color: '#606266', fontSize: 11 },
-          orient: 'horizontal',
-          left: 'center',
-          bottom: 6,
-          formatter: function(v) { return Number(Math.round(v)).toLocaleString(); }
-        },
-        xAxis3D: {
-          type: 'category',
-          data: xData,
-          name: xCol,
-          nameTextStyle: { color: '#606266', fontSize: 11 },
-          axisLine: { lineStyle: { color: '#909399' } },
-          axisLabel: {
-            interval: 0,
-            textStyle: { color: '#606266', fontSize: 11 },
-            formatter: function(val) {
-              if (!val) return '';
-              if (val.includes(' (')) return val.replace(' (', '\n(');
-              if (val.length > 9) return val.substring(0, 8) + '\n' + val.substring(8);
-              return val;
-            }
-          }
-        },
-        yAxis3D: {
-          type: 'category',
-          data: ['指标统计'],
-          name: '维度',
-          nameTextStyle: { color: '#909399', fontSize: 10 },
-          axisLabel: { show: false },
-          axisTick: { show: false },
-          axisLine: { lineStyle: { color: '#dcdfe6' } }
-        },
-        zAxis3D: {
-          type: 'value',
-          name: yCol,
-          nameTextStyle: { color: '#606266', fontSize: 11 },
-          axisLine: { lineStyle: { color: '#909399' } },
-          axisLabel: {
-            textStyle: { color: '#606266', fontSize: 10 },
-            formatter: function(val) {
-              return Number(val).toLocaleString();
-            }
-          }
-        },
-        grid3D: {
-          boxWidth: Math.min(Math.max(xData.length * 18, 90), 160),
-          boxDepth: 30,
-          boxHeight: 65,
-          viewControl: {
-            projection: 'perspective',
-            autoRotate: false,
-            alpha: 22,
-            beta: 25,
-            distance: 190,
-            minDistance: 80,
-            maxDistance: 350
-          },
-          light: {
-            main: {
-              intensity: 1.3,
-              shadow: true,
-              alpha: 35,
-              beta: 45
-            },
-            ambient: {
-              intensity: 0.4
-            }
-          }
-        },
-        series: [{
-          type: 'bar3D',
-          data: xData.map((_, i) => [i, 0, yData[i]]),
-          shading: 'lambert',
-          bevelSize: 0.3,
-          bevelSmoothness: 2,
-          label: {
-            show: true,
-            textStyle: {
-              color: '#1f2d3d',
-              fontSize: 10,
-              fontWeight: 'bold',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              borderRadius: 2,
-              padding: [2, 4]
-            },
-            formatter: function(p) {
-              return Number(p.value[2]).toLocaleString();
-            }
-          }
-        }]
-      };
-
-      try {
-        myChart.setOption(option3D, true);
-        setTimeout(() => myChart.resize(), 50);
-      } catch (err) {
-        console.error('3D Chart render failed:', err);
-        Toast.info('当前环境三维渲染限制，已自动回退至 2D 统计图');
-        initAiChart(chartId, columns, rows);
-      }
-    }
-
     // ================= 悬浮 Copilot 抽屉 =================
     function toggleCopilotDrawer() {
       document.getElementById('copilotDrawer').classList.toggle('active');
@@ -2732,7 +2505,7 @@
         });
         const data = await res.json();
         document.getElementById(loadId)?.remove();
-        renderAiResult(area, data, q);
+        renderAiResult(area, data);
       } catch (e) {
         document.getElementById(loadId)?.remove();
         area.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" style="color: #f56c6c;">提问失败: ${e.message}</div>`);
