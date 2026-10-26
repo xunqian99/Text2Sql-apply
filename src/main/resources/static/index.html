@@ -94,6 +94,36 @@
       flex-shrink: 0;
       z-index: 100;
       box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    aside.sidebar.collapsed {
+      width: 56px;
+    }
+    aside.sidebar.collapsed .corp-title-wrap {
+      display: none;
+    }
+    aside.sidebar.collapsed .sidebar-header {
+      padding: 0;
+      justify-content: center;
+    }
+    aside.sidebar.collapsed .sidebar-group-title {
+      display: none;
+    }
+    aside.sidebar.collapsed .menu-item {
+      padding: 12px 0;
+      justify-content: center;
+      gap: 0;
+    }
+    aside.sidebar.collapsed .menu-item span {
+      display: none;
+    }
+    aside.sidebar.collapsed .menu-item i {
+      font-size: 19px;
+      margin: 0;
+    }
+    aside.sidebar.collapsed .menu-badge {
+      display: none;
     }
 
     .sidebar-header {
@@ -247,8 +277,15 @@
       font-size: 16px;
       padding: 4px 6px;
       border-radius: 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
     }
-    .collapse-btn:hover { background: #f4f4f5; }
+    .collapse-btn:hover {
+      background: #e4e7ed;
+      color: var(--el-blue);
+    }
 
     .breadcrumb-box {
       font-size: 13px;
@@ -958,38 +995,38 @@
 
     <div class="sidebar-menu-list">
       <div class="sidebar-group-title">控制面板</div>
-      <div class="menu-item active" onclick="switchPage('dashboard', '系统首页', '控制台 / 仪表盘')">
+      <div class="menu-item active" title="控制台 / 仪表盘" onclick="switchPage('dashboard', '系统首页', '控制台 / 仪表盘')">
         <i class="ri-dashboard-2-line"></i>
         <span>控制台 / 仪表盘</span>
       </div>
 
       <div class="sidebar-group-title">业务中心 (OMS)</div>
-      <div class="menu-item" onclick="switchPage('products', '业务中心', '商品主数据管理')">
+      <div class="menu-item" title="商品主数据管理" onclick="switchPage('products', '业务中心', '商品主数据管理')">
         <i class="ri-shopping-bag-3-line"></i>
         <span>商品中心管理</span>
       </div>
-      <div class="menu-item" onclick="switchPage('orders', '业务中心', '订单履约中心')">
+      <div class="menu-item" title="订单履约中心" onclick="switchPage('orders', '业务中心', '订单履约中心')">
         <i class="ri-file-list-3-line"></i>
         <span>订单履约中心</span>
       </div>
-      <div class="menu-item" onclick="switchPage('metrics', '数据资产', '数仓业务指标字典')">
+      <div class="menu-item" title="数仓业务指标字典" onclick="switchPage('metrics', '数据资产', '数仓业务指标字典')">
         <i class="ri-database-2-line"></i>
         <span>数仓指标字典</span>
       </div>
 
       <div class="sidebar-group-title">智能助手 (AI Copilot)</div>
-      <div class="menu-item" onclick="switchPage('ai-query', '智能分析', 'Text2SQL 问数工作台')">
+      <div class="menu-item" title="Text2SQL 问数工作台" onclick="switchPage('ai-query', '智能分析', 'Text2SQL 问数工作台')">
         <i class="ri-sparkling-2-line"></i>
         <span>AI 智能问数分析</span>
         <span class="menu-badge badge-agent">Agent</span>
       </div>
 
       <div class="sidebar-group-title">系统管理</div>
-      <div class="menu-item" onclick="switchPage('users', '系统管理', '用户与权限分配')">
+      <div class="menu-item" title="用户与权限分配" onclick="switchPage('users', '系统管理', '用户与权限分配')">
         <i class="ri-shield-user-line"></i>
         <span>用户与角色管理</span>
       </div>
-      <div class="menu-item" onclick="switchPage('logs', '系统管理', '操作审计日志')">
+      <div class="menu-item" title="系统操作审计日志" onclick="switchPage('logs', '系统管理', '操作审计日志')">
         <i class="ri-history-line"></i>
         <span>系统操作审计日志</span>
       </div>
@@ -1001,7 +1038,7 @@
     <!-- 顶部工作台导航 (Navbar) -->
     <header class="top-navbar">
       <div class="top-left">
-        <span class="collapse-btn" title="折叠菜单"><i class="ri-menu-fold-line" id="sidebarToggleIcon"></i></span>
+        <span class="collapse-btn" title="折叠/展开侧边栏" onclick="toggleSidebarCollapse()"><i class="ri-menu-fold-line" id="sidebarToggleIcon"></i></span>
         <div class="breadcrumb-box" id="breadcrumbBox">
           <span>系统首页</span> / <span class="curr-crumb">控制台 / 仪表盘</span>
         </div>
@@ -1711,6 +1748,37 @@
         document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
         if (confirmResolve) closeCustomConfirm(false);
       }
+    });
+
+    // ================= 侧边栏折叠/展开与图表全局自适应 =================
+    function toggleSidebarCollapse() {
+      const sidebar = document.querySelector('aside.sidebar');
+      const icon = document.getElementById('sidebarToggleIcon');
+      if (!sidebar) return;
+
+      sidebar.classList.toggle('collapsed');
+      const isCollapsed = sidebar.classList.contains('collapsed');
+
+      if (icon) {
+        if (isCollapsed) {
+          icon.className = 'ri-menu-unfold-line';
+        } else {
+          icon.className = 'ri-menu-fold-line';
+        }
+      }
+
+      // 等待 260ms CSS 宽度过渡动画完成后，通知所有 ECharts 实例自适应 resize
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 260);
+    }
+
+    // 全局图表自适应监听 (窗口缩放或侧边栏切换)
+    window.addEventListener('resize', () => {
+      document.querySelectorAll('[id^="aiChart-"], #dashboardTrendChart, #dashboardPieChart').forEach(el => {
+        const chart = echarts.getInstanceByDom(el);
+        if (chart) chart.resize();
+      });
     });
 
     // ================= 页面路由与多标签页切换 =================
