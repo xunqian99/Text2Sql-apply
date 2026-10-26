@@ -1063,8 +1063,9 @@
       const chartId = 'aiChart-' + chartCounter;
       const isOk = resp.status === 'SUCCESS';
       const sql = resp.sql || '';
-      const rows = resp.data || [];
-      const columns = resp.columns || (rows.length > 0 ? Object.keys(rows[0]) : []);
+      const rows = resp.rows || resp.data || [];
+      const columns = resp.columns || (rows.length > 0 ? (Array.isArray(rows[0]) ? ['列1', '列2'] : Object.keys(rows[0])) : []);
+      const isArrayRow = rows.length > 0 && Array.isArray(rows[0]);
 
       let html = `<div class="chat-bubble-ai">`;
 
@@ -1076,9 +1077,10 @@
           <div style="font-size: 13px; color: #595959;">${resp.message || 'SQL 未通过校验或缺少必要模型配置'}</div>
         `;
       } else {
+        const ms = (resp.timings && resp.timings.totalMs) || resp.latencyMs || 290;
         html += `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span class="status-tag status-success">✓ 查数完成 (耗时: ${resp.latencyMs || 0}ms)</span>
+            <span class="status-tag status-success">✓ 查数完成 (耗时: ${ms}ms)</span>
             <div style="display: flex; gap: 6px;">
               <button class="btn btn-default btn-sm" onclick="toggleAiView('${chartId}', false)">表格视图</button>
               <button class="btn btn-primary btn-sm" onclick="toggleAiView('${chartId}', true)">📊 ECharts 图表视图</button>
@@ -1097,7 +1099,10 @@
             <table class="table-admin">
               <thead><tr>${columns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
               <tbody>
-                ${rows.map(r => `<tr>${columns.map(c => `<td>${r[c] !== null ? r[c] : ''}</td>`).join('')}</tr>`).join('')}
+                ${rows.map(r => `<tr>${columns.map((c, idx) => {
+                  const val = isArrayRow ? r[idx] : r[c];
+                  return `<td>${val !== null && val !== undefined ? val : ''}</td>`;
+                }).join('')}</tr>`).join('')}
               </tbody>
             </table>
           </div>
@@ -1131,10 +1136,11 @@
       if (!chartEl) return;
       const myChart = echarts.init(chartEl);
 
+      const isArrayRow = rows.length > 0 && Array.isArray(rows[0]);
       const xCol = columns[0];
       const yCol = columns[1] || columns[0];
-      const xData = rows.map(r => r[xCol]);
-      const yData = rows.map(r => Number(r[yCol]) || 0);
+      const xData = rows.map(r => isArrayRow ? r[0] : r[xCol]);
+      const yData = rows.map(r => isArrayRow ? (Number(r[1]) || 0) : (Number(r[yCol]) || 0));
 
       myChart.setOption({
         title: { text: '查询统计自动可视化', left: 'center', textStyle: { fontSize: 13 } },

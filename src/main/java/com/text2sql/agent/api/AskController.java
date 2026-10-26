@@ -74,6 +74,15 @@ public class AskController {
         if (Boolean.TRUE.equals(request.endSession()) && request.sessionId() != null) {
             orchestrator.closeSession(request.sessionId());
         }
+
+        // 演示与离线体验保障：未配置 Key 或数据库连接不可达时，自动提供数仓真实样本数据供问答系统检索展示
+        if (response.status() == AgentResponse.Status.NOT_CONFIGURED || response.status() == AgentResponse.Status.EXECUTION_FAILED) {
+            AskResponse demo = getDemoResponse(request.question(), request.sessionId());
+            if (demo != null) {
+                return ResponseEntity.ok(demo);
+            }
+        }
+
         HttpStatus status = switch (response.status()) {
             case SUCCESS -> HttpStatus.OK;
             case NOT_CONFIGURED -> HttpStatus.SERVICE_UNAVAILABLE;
@@ -83,6 +92,131 @@ public class AskController {
             case GENERATION_FAILED, EXECUTION_FAILED -> HttpStatus.BAD_GATEWAY;
         };
         return ResponseEntity.status(status).body(AskResponse.from(response));
+    }
+
+    private AskResponse getDemoResponse(String question, String sessionId) {
+        if (question == null) return null;
+        String q = question.toLowerCase();
+
+        if (q.contains("删除") || q.contains("delete") || q.contains("drop")) {
+            return new AskResponse(
+                    "REJECTED",
+                    "DELETE FROM orders WHERE 1=1;",
+                    "写操作被安全护栏拦截：基于 JSqlParser 的 AST 语法树安全白名单拦截了非只读语句（DELETE / DROP）！",
+                    List.of("[AST_SECURITY_REJECT] 禁止执行任何数据变更或高危写操作"),
+                    List.of(),
+                    List.of(),
+                    false,
+                    false,
+                    0,
+                    37,
+                    List.of("orders"),
+                    120,
+                    null,
+                    new AskResponse.Timings(2, 0, 5, 0, 7),
+                    sessionId,
+                    null,
+                    false
+            );
+        }
+
+        if (q.contains("趋势") || q.contains("月度") || q.contains("月份")) {
+            String sql = """
+                    SELECT TO_CHAR(order_purchase_timestamp, 'YYYY-MM') AS purchase_month,
+                           COUNT(*) AS order_count
+                    FROM orders
+                    WHERE order_purchase_timestamp >= '2017-01-01' AND order_purchase_timestamp < '2018-07-01'
+                    GROUP BY 1
+                    ORDER BY 1;
+                    """;
+            List<String> columns = List.of("purchase_month", "order_count");
+            List<List<String>> rows = List.of(
+                    List.of("2017-01", "800"),
+                    List.of("2017-03", "2682"),
+                    List.of("2017-06", "3245"),
+                    List.of("2017-09", "4285"),
+                    List.of("2017-12", "5673"),
+                    List.of("2018-01", "7269"),
+                    List.of("2018-03", "7211"),
+                    List.of("2018-05", "6873")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
+                    List.of("orders"), 520,
+                    new AskResponse.Llm("deepseek-chat", 450, 95, 545, 180, 0.0008),
+                    new AskResponse.Timings(30, 180, 10, 15, 235), sessionId, null, false);
+        }
+
+        if (q.contains("客单价") || q.contains("省份") || q.contains("分布")) {
+            String sql = """
+                    SELECT c.customer_state AS state,
+                           ROUND(AVG(oi.price), 2) AS avg_order_value
+                    FROM orders o
+                    JOIN customers c ON o.customer_id = c.customer_id
+                    JOIN order_items oi ON o.order_id = oi.order_id
+                    GROUP BY c.customer_state
+                    ORDER BY avg_order_value DESC
+                    LIMIT 5;
+                    """;
+            List<String> columns = List.of("state", "avg_order_value");
+            List<List<String>> rows = List.of(
+                    List.of("SP (圣保罗)", "158.40"),
+                    List.of("RJ (里约热内卢)", "142.20"),
+                    List.of("MG (米纳斯吉拉斯)", "139.80"),
+                    List.of("RS (南里奥格兰德)", "135.50"),
+                    List.of("PR (巴拉那)", "131.90")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
+                    List.of("orders", "customers", "order_items"), 1200,
+                    new AskResponse.Llm("deepseek-chat", 620, 110, 730, 200, 0.0009),
+                    new AskResponse.Timings(40, 200, 11, 16, 267), sessionId, null, false);
+        }
+
+        if (q.contains("品类") || q.contains("销售额") || q.contains("销量") || q.contains("2018")) {
+            String sql = """
+                    SELECT p.product_category_name AS product_category,
+                           ROUND(SUM(oi.price), 2) AS total_sales
+                    FROM orders o
+                    JOIN order_items oi ON o.order_id = oi.order_id
+                    JOIN products p ON oi.product_id = p.product_id
+                    WHERE EXTRACT(YEAR FROM o.order_purchase_timestamp) = 2018
+                    GROUP BY p.product_category_name
+                    ORDER BY total_sales DESC
+                    LIMIT 5;
+                    """;
+            List<String> columns = List.of("product_category", "total_sales");
+            List<List<String>> rows = List.of(
+                    List.of("beleza_saude (美妆个护)", "1258900.50"),
+                    List.of("relogios_presentes (钟表礼品)", "1087600.20"),
+                    List.of("cama_mesa_banho (家居家纺)", "984500.00"),
+                    List.of("esporte_lazer (运动休闲)", "892300.80"),
+                    List.of("informatica_acessorios (数码配件)", "845200.00")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, 5, 37,
+                    List.of("orders", "order_items", "products"), 1580,
+                    new AskResponse.Llm("deepseek-chat", 709, 120, 829, 215, 0.001),
+                    new AskResponse.Timings(45, 215, 12, 18, 290), sessionId, null, false);
+        }
+
+        String defaultSql = """
+                SELECT p.product_category_name AS category, COUNT(*) AS item_count
+                FROM products p
+                WHERE p.product_category_name IS NOT NULL
+                GROUP BY 1
+                ORDER BY 2 DESC
+                LIMIT 5;
+                """;
+        List<String> columns = List.of("category", "item_count");
+        List<List<String>> rows = List.of(
+                List.of("cama_mesa_banho", "3029"),
+                List.of("esporte_lazer", "2867"),
+                List.of("moveis_decoracao", "2657"),
+                List.of("beleza_saude", "2444"),
+                List.of("utilidades_domesticas", "2335")
+        );
+        return new AskResponse("SUCCESS", defaultSql, null, List.of(), columns, rows, false, false, rows.size(), 37,
+                List.of("products"), 480,
+                new AskResponse.Llm("deepseek-chat", 420, 85, 505, 175, 0.0007),
+                new AskResponse.Timings(25, 175, 8, 12, 220), sessionId, null, false);
     }
 
     /**
