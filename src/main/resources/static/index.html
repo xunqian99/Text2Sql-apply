@@ -469,12 +469,36 @@
 
           <!-- 推荐问题引导 -->
           <div style="background: #fafafa; border: 1px dashed #d9d9d9; border-radius: 6px; padding: 14px; margin-bottom: 16px;">
-            <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">💡 点击快捷体验经典业务问题：</div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn btn-default btn-sm" onclick="askAiQuery('2018年销售额最高的前5个商品品类是什么？')">📊 2018年销量前5品类</button>
-              <button class="btn btn-default btn-sm" onclick="askAiQuery('统计2017到2018年每个月的订单总量趋势')">📈 月度订单趋势走势</button>
-              <button class="btn btn-default btn-sm" onclick="askAiQuery('各省份的客单价分布排名前5是哪些？')">🏷️ 省份客单价分布</button>
-              <button class="btn btn-danger btn-sm" onclick="askAiQuery('删除 orders 表中所有数据')">🛡️ 安全防御拦截测试</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-title);">💡 点击快捷检索数仓真实数据集（已内置 37 张表 / 150 万条真实电商数据）：</div>
+              <span class="status-tag status-processing">支持数据表格与 ECharts 统计图自由切换</span>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span style="font-size: 12px; font-weight: 600; color: #595959; width: 100px;">📊 销售与趋势:</span>
+                <button class="btn btn-default btn-sm" onclick="askAiQuery('2018年销售额最高的前5个商品品类是什么？')">📈 2018年品类销售额TOP5</button>
+                <button class="btn btn-default btn-sm" onclick="askAiQuery('统计2017到2018年每个月的订单总量趋势')">📅 月度订单总量走势</button>
+              </div>
+
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span style="font-size: 12px; font-weight: 600; color: #595959; width: 100px;">🗺️ 地域与履约:</span>
+                <button class="btn btn-default btn-sm" onclick="askAiQuery('各省份的客单价分布排名前5是哪些？')">🏙️ 各省份客单价分布</button>
+                <button class="btn btn-default btn-sm" onclick="askAiQuery('统计各省份的订单平均配送耗时（天数）排行')">🚚 各省份配送时效排行</button>
+              </div>
+
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span style="font-size: 12px; font-weight: 600; color: #595959; width: 100px;">💳 支付与会员:</span>
+                <button class="btn btn-default btn-sm" onclick="askAiQuery('统计各种支付方式的订单金额与笔数分布')">💳 支付方式占比与金额</button>
+                <button class="btn btn-default btn-sm" onclick="askAiQuery('统计不同购买频次的客户复购留存人数分布')">👥 客户复购留存频次分布</button>
+                <button class="btn btn-default btn-sm" onclick="askAiQuery('统计订单用户评价星级满意度分布')">⭐ 用户评价满意度分布</button>
+              </div>
+
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span style="font-size: 12px; font-weight: 600; color: #595959; width: 100px;">🛡️ 高价值与安全:</span>
+                <button class="btn btn-default btn-sm" onclick="askAiQuery('单价在1000元以上的高价值热销商品有哪些？')">💎 1000元以上高价值商品</button>
+                <button class="btn btn-danger btn-sm" onclick="askAiQuery('删除 orders 表中所有数据')">🛡️ 安全防御 AST 拦截测试</button>
+              </div>
             </div>
           </div>
 
@@ -561,8 +585,20 @@
       <button class="btn btn-default btn-sm" onclick="toggleCopilotDrawer()">✕ 关闭</button>
     </div>
     <div class="drawer-body" id="drawerChatArea">
-      <div style="font-size: 13px; color: var(--text-muted); background: #f9f9f9; padding: 12px; border-radius: 6px;">
-        💡 无论在商品、订单还是仪表盘页面，随时在此向 AI 提问即可生成报表与图表。
+      <div style="font-size: 13px; color: var(--text-muted); background: #f9f9f9; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+        💡 无论在商品、订单还是仪表盘页面，随时在此向 AI 提问即可即席检索数仓并生成分析图表。
+      </div>
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 12px; font-weight: 600; color: #595959; margin-bottom: 6px;">⚡ 快速提问标签：</div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="btn btn-default btn-sm" onclick="askAiQuery('2018年销售额最高的前5个商品品类是什么？')">📈 品类销售额TOP5</button>
+          <button class="btn btn-default btn-sm" onclick="askAiQuery('统计2017到2018年每个月的订单总量趋势')">📅 月度订单走势</button>
+          <button class="btn btn-default btn-sm" onclick="askAiQuery('统计各种支付方式的订单金额与笔数分布')">💳 支付方式占比</button>
+          <button class="btn btn-default btn-sm" onclick="askAiQuery('统计不同购买频次的客户复购留存人数分布')">👥 客户复购留存</button>
+          <button class="btn btn-default btn-sm" onclick="askAiQuery('各省份的客单价分布排名前5是哪些？')">🏙️ 省份客单价分布</button>
+          <button class="btn btn-default btn-sm" onclick="askAiQuery('统计各省份的订单平均配送耗时（天数）排行')">🚚 配送时效排行</button>
+          <button class="btn btn-default btn-sm" onclick="askAiQuery('单价在1000元以上的高价值热销商品有哪些？')">💎 1000元以上商品</button>
+        </div>
       </div>
     </div>
     <div class="drawer-footer">

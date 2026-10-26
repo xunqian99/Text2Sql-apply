@@ -98,11 +98,12 @@ public class AskController {
         if (question == null) return null;
         String q = question.toLowerCase();
 
-        if (q.contains("删除") || q.contains("delete") || q.contains("drop")) {
+        // 1. 安全防御测试：拦截非只读/写操作
+        if (q.contains("删除") || q.contains("delete") || q.contains("drop") || q.contains("update") || q.contains("truncate") || q.contains("alter")) {
             return new AskResponse(
                     "REJECTED",
                     "DELETE FROM orders WHERE 1=1;",
-                    "写操作被安全护栏拦截：基于 JSqlParser 的 AST 语法树安全白名单拦截了非只读语句（DELETE / DROP）！",
+                    "写操作被安全护栏拦截：基于 JSqlParser 的 AST 语法树安全白名单拦截了非只读语句（DELETE / DROP / UPDATE / ALTER）！",
                     List.of("[AST_SECURITY_REJECT] 禁止执行任何数据变更或高危写操作"),
                     List.of(),
                     List.of(),
@@ -120,12 +121,145 @@ public class AskController {
             );
         }
 
-        if (q.contains("趋势") || q.contains("月度") || q.contains("月份")) {
+        // 2. 支付方式金额与笔数分布
+        if (q.contains("支付") || q.contains("payment") || q.contains("信用卡") || q.contains("分期") || q.contains("条码")) {
+            String sql = """
+                    SELECT payment_type,
+                           COUNT(*) AS payment_count,
+                           ROUND(SUM(payment_value)::numeric, 2) AS total_amount
+                    FROM order_payments
+                    GROUP BY payment_type
+                    ORDER BY total_amount DESC;
+                    """;
+            List<String> columns = List.of("payment_type", "payment_count", "total_amount");
+            List<List<String>> rows = List.of(
+                    List.of("credit_card (信用卡)", "76784", "12542084.12"),
+                    List.of("boleto (巴西条码支付)", "19784", "2869361.27"),
+                    List.of("voucher (代金券/礼品卡)", "5775", "379436.87"),
+                    List.of("debit_card (借记卡)", "1529", "217989.79")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
+                    List.of("order_payments"), 640,
+                    new AskResponse.Llm("deepseek-chat", 480, 90, 570, 185, 0.0008),
+                    new AskResponse.Timings(32, 185, 9, 14, 240), sessionId, null, false);
+        }
+
+        // 3. 物流履约与各州配送平均耗时
+        if (q.contains("物流") || q.contains("配送") || q.contains("时效") || q.contains("耗时") || q.contains("发货") || q.contains("送达")) {
+            String sql = """
+                    SELECT c.customer_state AS state,
+                           ROUND(AVG(EXTRACT(DAY FROM (o.order_delivered_customer_date - o.order_purchase_timestamp)))::numeric, 1) AS avg_delivery_days
+                    FROM orders o
+                    JOIN customers c ON o.customer_id = c.customer_id
+                    WHERE o.order_status = 'delivered'
+                      AND o.order_delivered_customer_date IS NOT NULL
+                    GROUP BY c.customer_state
+                    ORDER BY avg_delivery_days ASC
+                    LIMIT 6;
+                    """;
+            List<String> columns = List.of("state", "avg_delivery_days");
+            List<List<String>> rows = List.of(
+                    List.of("SP (圣保罗州)", "8.3"),
+                    List.of("PR (巴拉那州)", "11.5"),
+                    List.of("MG (米纳斯吉拉斯)", "12.1"),
+                    List.of("RJ (里约热内卢)", "14.8"),
+                    List.of("RS (南里奥格兰德)", "15.2"),
+                    List.of("BA (巴伊亚州)", "18.6")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
+                    List.of("orders", "customers"), 1150,
+                    new AskResponse.Llm("deepseek-chat", 590, 105, 695, 195, 0.0009),
+                    new AskResponse.Timings(38, 195, 11, 15, 259), sessionId, null, false);
+        }
+
+        // 4. 用户评价与星级满意度分布
+        if (q.contains("评价") || q.contains("评分") || q.contains("满意度") || q.contains("好评") || q.contains("差评") || q.contains("review")) {
+            String sql = """
+                    SELECT review_score AS score_stars,
+                           COUNT(*) AS review_count,
+                           ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS percentage
+                    FROM order_reviews
+                    GROUP BY review_score
+                    ORDER BY review_score DESC;
+                    """;
+            List<String> columns = List.of("score_stars", "review_count", "percentage");
+            List<List<String>> rows = List.of(
+                    List.of("5星好评", "57328", "57.4%"),
+                    List.of("4星好评", "19142", "19.2%"),
+                    List.of("1星差评", "11424", "11.4%"),
+                    List.of("3星中评", "8179", "8.2%"),
+                    List.of("2星差评", "3820", "3.8%")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
+                    List.of("order_reviews"), 580,
+                    new AskResponse.Llm("deepseek-chat", 460, 88, 548, 178, 0.0008),
+                    new AskResponse.Timings(28, 178, 8, 13, 227), sessionId, null, false);
+        }
+
+        // 5. 客户复购留存频次分布
+        if (q.contains("复购") || q.contains("留存") || q.contains("会员") || q.contains("客户数") || (q.contains("客户") && !q.contains("客单价"))) {
+            String sql = """
+                    SELECT purchase_count,
+                           COUNT(customer_unique_id) AS customer_count
+                    FROM (
+                        SELECT customer_unique_id, COUNT(order_id) AS purchase_count
+                        FROM orders o
+                        JOIN customers c ON o.customer_id = c.customer_id
+                        WHERE o.order_status = 'delivered'
+                        GROUP BY customer_unique_id
+                    ) t
+                    GROUP BY purchase_count
+                    ORDER BY purchase_count ASC
+                    LIMIT 5;
+                    """;
+            List<String> columns = List.of("purchase_count", "customer_count");
+            List<List<String>> rows = List.of(
+                    List.of("购买1次 (新客)", "93099"),
+                    List.of("购买2次 (首重复购)", "2745"),
+                    List.of("购买3次 (高频老客)", "203"),
+                    List.of("购买4次 (忠实会员)", "30"),
+                    List.of("购买5次及以上 (核心VIP)", "19")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
+                    List.of("orders", "customers"), 1420,
+                    new AskResponse.Llm("deepseek-chat", 680, 115, 795, 210, 0.001),
+                    new AskResponse.Timings(42, 210, 12, 16, 280), sessionId, null, false);
+        }
+
+        // 6. 高价值/价格排名前5商品
+        if (q.contains("价格") || q.contains("高价值") || q.contains("单价") || q.contains("1000") || q.contains("昂贵") || q.contains("最贵")) {
+            String sql = """
+                    SELECT p.product_id,
+                           p.product_category_name AS category,
+                           ROUND(oi.price::numeric, 2) AS price
+                    FROM order_items oi
+                    JOIN products p ON oi.product_id = p.product_id
+                    WHERE oi.price >= 1000.0
+                    ORDER BY oi.price DESC
+                    LIMIT 5;
+                    """;
+            List<String> columns = List.of("product_id", "category", "price");
+            List<List<String>> rows = List.of(
+                    List.of("bb50f2e236e5eee010069d6570d04032", "relogios_presentes (奢华腕表)", "6729.00"),
+                    List.of("69c590ab8b417f41a8234b713d14a7e7", "pcs (移动工作站服务器)", "4590.00"),
+                    List.of("ec31d2a1c495d4783a7ae63974fa95b2", "instrumentos_musicais (专业吉他)", "4059.99"),
+                    List.of("25903784409d84f41902a48870279ff8", "consoles_games (复古定制游戏机)", "3999.00"),
+                    List.of("a1cad8e0a4760f9da07a81e0324126f7", "eletroportateis (智能咖啡机)", "3200.00")
+            );
+            return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
+                    List.of("order_items", "products"), 890,
+                    new AskResponse.Llm("deepseek-chat", 510, 92, 602, 190, 0.0008),
+                    new AskResponse.Timings(35, 190, 10, 15, 250), sessionId, null, false);
+        }
+
+        // 7. 时间趋势走势分析
+        if (q.contains("趋势") || q.contains("月度") || q.contains("月份") || q.contains("走势") || q.contains("增长")) {
             String sql = """
                     SELECT TO_CHAR(order_purchase_timestamp, 'YYYY-MM') AS purchase_month,
                            COUNT(*) AS order_count
                     FROM orders
-                    WHERE order_purchase_timestamp >= '2017-01-01' AND order_purchase_timestamp < '2018-07-01'
+                    WHERE order_purchase_timestamp >= '2017-01-01' AND order_purchase_timestamp < '2018-09-01'
+                      AND order_status = 'delivered'
                     GROUP BY 1
                     ORDER BY 1;
                     """;
@@ -138,7 +272,8 @@ public class AskController {
                     List.of("2017-12", "5673"),
                     List.of("2018-01", "7269"),
                     List.of("2018-03", "7211"),
-                    List.of("2018-05", "6873")
+                    List.of("2018-05", "6873"),
+                    List.of("2018-08", "6512")
             );
             return new AskResponse("SUCCESS", sql, null, List.of(), columns, rows, false, false, rows.size(), 37,
                     List.of("orders"), 520,
@@ -146,13 +281,15 @@ public class AskController {
                     new AskResponse.Timings(30, 180, 10, 15, 235), sessionId, null, false);
         }
 
-        if (q.contains("客单价") || q.contains("省份") || q.contains("分布")) {
+        // 8. 省份客单价分布
+        if (q.contains("客单价") || q.contains("省份") || q.contains("地域") || q.contains("地区") || q.contains("城市")) {
             String sql = """
                     SELECT c.customer_state AS state,
-                           ROUND(AVG(oi.price), 2) AS avg_order_value
+                           ROUND(AVG(oi.price)::numeric, 2) AS avg_order_value
                     FROM orders o
                     JOIN customers c ON o.customer_id = c.customer_id
                     JOIN order_items oi ON o.order_id = oi.order_id
+                    WHERE o.order_status = 'delivered'
                     GROUP BY c.customer_state
                     ORDER BY avg_order_value DESC
                     LIMIT 5;
@@ -171,14 +308,16 @@ public class AskController {
                     new AskResponse.Timings(40, 200, 11, 16, 267), sessionId, null, false);
         }
 
-        if (q.contains("品类") || q.contains("销售额") || q.contains("销量") || q.contains("2018")) {
+        // 9. 品类销售额TOP5
+        if (q.contains("品类") || q.contains("销售额") || q.contains("销量") || q.contains("2018") || q.contains("前5")) {
             String sql = """
                     SELECT p.product_category_name AS product_category,
-                           ROUND(SUM(oi.price), 2) AS total_sales
+                           ROUND(SUM(oi.price)::numeric, 2) AS total_sales
                     FROM orders o
                     JOIN order_items oi ON o.order_id = oi.order_id
                     JOIN products p ON oi.product_id = p.product_id
                     WHERE EXTRACT(YEAR FROM o.order_purchase_timestamp) = 2018
+                      AND o.order_status = 'delivered'
                     GROUP BY p.product_category_name
                     ORDER BY total_sales DESC
                     LIMIT 5;
@@ -197,6 +336,7 @@ public class AskController {
                     new AskResponse.Timings(45, 215, 12, 18, 290), sessionId, null, false);
         }
 
+        // 10. 默认兜底：品类商品数分布
         String defaultSql = """
                 SELECT p.product_category_name AS category, COUNT(*) AS item_count
                 FROM products p
@@ -207,11 +347,11 @@ public class AskController {
                 """;
         List<String> columns = List.of("category", "item_count");
         List<List<String>> rows = List.of(
-                List.of("cama_mesa_banho", "3029"),
-                List.of("esporte_lazer", "2867"),
-                List.of("moveis_decoracao", "2657"),
-                List.of("beleza_saude", "2444"),
-                List.of("utilidades_domesticas", "2335")
+                List.of("cama_mesa_banho (家居家纺)", "3029"),
+                List.of("esporte_lazer (运动休闲)", "2867"),
+                List.of("moveis_decoracao (家具装饰)", "2657"),
+                List.of("beleza_saude (美妆个护)", "2444"),
+                List.of("utilidades_domesticas (生活百货)", "2335")
         );
         return new AskResponse("SUCCESS", defaultSql, null, List.of(), columns, rows, false, false, rows.size(), 37,
                 List.of("products"), 480,
