@@ -27,10 +27,96 @@ spring:
       moderation: none
 
 agent:
-  # Text2SQL 智能体专用配置
-  sandbox:
-    # 只读沙箱执行账号（严格防御非 SELECT 操作）
-    username: text2sql_ro
-    password: text2sql_ro
-    timeout-seconds: 10
+  db:
     max-rows: 200
+    query-timeout-seconds: 10
+
+  guard:
+    limit-mode: APPEND
+
+  llm:
+    provider: openai-compatible
+    base-url: https://api.deepseek.com
+    completions-path: /v1/chat/completions
+    model: deepseek-chat
+    temperature: 0.0
+    max-tokens: 1024
+    timeout-seconds: 60
+    api-key: ${AGENT_LLM_API_KEY:}
+    input-price-per-1k: 0.0
+    output-price-per-1k: 0.0
+
+  prompt:
+    include-data-profile: true
+    include-foreign-keys: true
+
+  retrieval:
+    enabled: true
+    top-k: 8
+    relation-hops: 1
+    relation-decay: 0.4
+    expansion-seed-limit: 3
+    single-char-weight-factor: 0.5
+    bridge-repair-enabled: true
+    bridge-repair-max-tables: 2
+    identifier-hit-weight: 1.5
+
+  fewshot:
+    enabled: false
+    max-examples: 3
+
+  result-checker:
+    enabled: false
+
+  tool-use:
+    enabled: false
+    table-threshold: 3
+    max-rounds: 3
+
+  conversation:
+    enabled: true
+    max-turns: 5
+    timeout-minutes: 30
+    reuse-schema: true
+    rewrite-with-llm: true
+
+  clarification:
+    enabled: false
+
+  self-correction:
+    enabled: false
+    max-attempts: 1
+
+  cache:
+    enabled: false
+    max-entries: 1000
+
+  persistence:
+    enabled: false
+    url: jdbc:postgresql://localhost:5432/olist
+    username: text2sql_rw
+    password: text2sql_rw
+
+  observability:
+    enabled: false
+    dir: reports/llm-calls
+    include-content: false
+
+  routing:
+    enabled: false
+    escalation-model: ""
+
+  eval:
+    enabled: false
+    dir: data/eval
+    out-dir: reports
+    limit: 0
+    layers: []
+    dry-run: false
+    recompute-gold: true
+
+logging:
+  level:
+    root: INFO
+    com.ecommerce.platform: INFO
+    com.text2sql.agent: INFO
