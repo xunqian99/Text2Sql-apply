@@ -33,3 +33,10 @@ target/
 logs/
 tmp/
 .DS_Store
+
+### Agent & Dumps ###
+.agents/
+scratch/
+*.dump
+*.tar.gz
+*.zip
