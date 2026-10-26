@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电商运营与智能问数中台系统 (E-Commerce Ops & AI Platform)</title>
+  <!-- ECharts 5 动态图表引擎 -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    :root {
+      --sidebar-bg: #1e222d;
+      --sidebar-hover: #2a2f3d;
+      --sidebar-active: #3b82f6;
+      --sidebar-text: #e2e8f0;
+      --sidebar-muted: #94a3b8;
+      --main-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent-green: #10b981;
+      --sql-bg: #1e1e1e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      height: 100vh; display: flex; overflow: hidden; background: var(--main-bg); color: var(--text-main);
+    }
+
+    /* 侧边导航栏 */
+    aside.sidebar {
+      width: 250px; background: var(--sidebar-bg); color: var(--sidebar-text);
+      display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #2d3748;
+    }
+    .brand {
+      padding: 20px 18px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08); font-weight: 700; font-size: 15px; letter-spacing: 0.5px;
+    }
+    .brand-icon {
+      width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .nav-list { flex: 1; padding: 16px 10px; display: flex; flex-direction: column; gap: 6px; }
+    .nav-header { font-size: 11px; text-transform: uppercase; color: var(--sidebar-muted); padding: 8px 12px; font-weight: 600; letter-spacing: 0.5px; }
+    .nav-btn {
+      display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 8px;
+      color: #cbd5e1; font-size: 14px; font-weight: 500; cursor: pointer; border: 0; background: transparent;
+      width: 100%; text-align: left; transition: all 0.15s;
+    }
+    .nav-btn:hover { background: var(--sidebar-hover); color: #fff; }
+    .nav-btn.active { background: var(--sidebar-active); color: #fff; }
+    .nav-btn .badge {
+      margin-left: auto; font-size: 10px; padding: 2px 6px; border-radius: 10px; background: rgba(255,255,255,0.2);
+    }
+
+    /* 顶部与主体容器 */
+    .app-main { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
+    header.top-header {
+      height: 56px; background: #fff; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;
+    }
+    .header-title { font-size: 16px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn {
+      padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { background: #fff; border-color: var(--border); color: #334155; }
+    .btn-outline:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .btn-copilot {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+    }
+    .btn-copilot:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    /* 视图区域 */
+    .view-content { flex: 1; overflow-y: auto; padding: 20px 24px; display: none; }
+    .view-content.active { display: block; }
+
+    /* 表格与过滤组件 */
+    .card {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 20px;
+    }
+    .filter-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .input-control, .select-control {
+      padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none;
+      background: #fff; color: #334155; min-width: 180px;
+    }
+    .input-control:focus, .select-control:focus { border-color: var(--primary); }
+
+    table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    table.data-table th { background: #f8fafc; border-bottom: 1px solid var(--border); padding: 10px 14px; font-weight: 600; color: #475569; }
+    table.data-table td { border-bottom: 1px solid #f1f5f9; padding: 9px 14px; color: #1e293b; }
+    table.data-table tr:hover { background: #f8fafc; }
+
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .tag-blue { background: #eff6ff; color: #1d4ed8; }
+    .tag-green { background: #ecfdf5; color: #047857; }
+    .tag-yellow { background: #fffbeb; color: #b45309; }
+
+    .pagination { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 14px; font-size: 13px; }
+
+    /* AI 问数工作台样式 */
+    .chat-layout { display: flex; flex-direction: column; height: 100%; }
+    .chat-body { flex: 1; overflow-y: auto; padding-bottom: 110px; display: flex; flex-direction: column; gap: 20px; }
+    .msg-row { display: flex; gap: 14px; max-width: 900px; margin: 0 auto; width: 100%; }
+    .msg-user { justify-content: flex-end; }
+    .bubble-user { background: #f1f5f9; border-radius: 18px; padding: 10px 18px; font-size: 14px; }
+    .bubble-agent { flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+    
+    .sql-box { background: var(--sql-bg); border-radius: 6px; padding: 12px 16px; margin: 10px 0; font-family: monospace; font-size: 12px; color: #f8fafc; line-height: 1.5; overflow-x: auto; }
+    .chart-container { width: 100%; height: 320px; margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+    .view-toggle-bar { display: flex; gap: 8px; margin: 8px 0; }
+
+    .chat-input-bar {
+      position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 40%);
+      padding: 16px 24px 20px; display: flex; justify-content: center;
+    }
+    .input-box {
+      max-width: 900px; width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 24px;
+      padding: 8px 16px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .input-box input { flex: 1; border: 0; outline: 0; font-size: 14px; }
+    .input-box button { background: var(--primary); color: #fff; border: 0; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
+
+    /* Copilot 侧边抽屉 */
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none;
+    }
+    .drawer-overlay.active { display: block; }
+    .drawer-panel {
+      position: fixed; top: 0; right: -550px; width: 550px; height: 100%; background: #fff;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.1); z-index: 101; transition: right 0.25s ease-out;
+      display: flex; flex-direction: column;
+    }
+    .drawer-panel.active { right: 0; }
+    .drawer-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+
+    /* 弹窗 */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 200; }
+    .modal.active { display: flex; }
+    .modal-card { background: #fff; border-radius: 10px; width: 440px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+
+  <!-- 侧边导航 -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">🛍️</div>
+      <span>电商运营与智能分析中台</span>
+    </div>
+    <div class="nav-list">
+      <div class="nav-header">业务管理中心 (CRUD)</div>
+      <button class="nav-btn active" onclick="switchView('products')">
+        <span>📦</span> 商品管理
+      </button>
+      <button class="nav-btn" onclick="switchView('orders')">
+        <span>📋</span> 订单中心
+      </button>
+      <button class="nav-btn" onclick="switchView('metrics')">
+        <span>🏷️</span> 数仓指标字典
+      </button>
+
+      <div class="nav-header" style="margin-top: 14px;">AI 智能分析中枢</div>
+      <button class="nav-btn" onclick="switchView('copilot-view')">
+        <span>🤖</span> AI 智能问数 (Text2SQL)
+        <span class="badge">Agent</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 主体工作区 -->
+  <div class="app-main">
+    <header class="top-header">
+      <div class="header-title" id="pageTitle">📦 商品管理</div>
+      <div class="header-actions">
+        <button class="btn btn-outline" onclick="openKeyModal()">
+          🔑 模型 API Key
+        </button>
+        <button class="btn btn-copilot" onclick="toggleDrawer()">
+          ✨ 唤起 AI Copilot 助手
+        </button>
+      </div>
+    </header>
+
+    <!-- 视图 1：商品管理 -->
+    <div id="view-products" class="view-content active">
+      <div class="card">
+        <div class="filter-bar">
+          <select id="prodCategorySelect" class="select-control" onchange="loadProducts(1)">
+            <option value="">全部商品品类</option>
+          </select>
+          <input type="text" id="prodKeyword" class="input-control" placeholder="搜索商品ID或品类..." onkeyup="if(event.key==='Enter')loadProducts(1)">
+          <button class="btn btn-primary" onclick="loadProducts(1)">查询</button>
+          <button class="btn btn-outline" onclick="openAddProductModal()">+ 新增商品</button>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>商品 ID</th>
+              <th>商品类目</th>
+              <th>照片数</th>
+              <th>重量 (g)</th>
+              <th>尺寸 (长×宽×高 cm)</th>
+              <th>均价 (R$)</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="prodTableBody">
+            <tr><td colspan="7" style="text-align:center; padding: 20px;">正在加载数据...</td></tr>
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          <span id="prodPageInfo">第 1 页</span>
+          <button class="btn btn-outline" id="prodPrevBtn" onclick="changeProdPage(-1)">上一页</button>
+          <button class="btn btn-outline" id="prodNextBtn" onclick="changeProdPage(1)">下一页</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 视图 2：订单中心 -->
+    <div id="view-orders" class="view-content">
+      <div class="card">
+        <div class="filter-bar">
+          <select id="orderStatusSelect" class="select-control" onchange="loadOrders(1)">
+            <option value="">全部订单状态</option>
+            <option value="delivered">已送达 (delivered)</option>
+            <option value="shipped">已发货 (shipped)</option>
+            <option value="canceled">已取消 (canceled)</option>
+            <option value="invoiced">已开票 (invoiced)</option>
+          </select>
+          <input type="text" id="orderIdSearch" class="input-control" placeholder="根据订单号模糊搜索..." onkeyup="if(event.key==='Enter')loadOrders(1)">
+          <button class="btn btn-primary" onclick="loadOrders(1)">查询</button>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>订单号</th>
+              <th>买家 ID</th>
+              <th>订单状态</th>
+              <th>商品件数</th>
+              <th>总金额 (R$)</th>
+              <th>下单时间</th>
+              <th>签收时间</th>
+            </tr>
+          </thead>
+          <tbody id="orderTableBody">
+            <tr><td colspan="7" style="text-align:center; padding: 20px;">点击查询加载订单...</td></tr>
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          <span id="orderPageInfo">第 1 页</span>
+          <button class="btn btn-outline" id="orderPrevBtn" onclick="changeOrderPage(-1)">上一页</button>
+          <button class="btn btn-outline" id="orderNextBtn" onclick="changeOrderPage(1)">下一页</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 视图 3：指标字典 -->
+    <div id="view-metrics" class="view-content">
+      <div class="card">
+        <h3 style="margin-bottom: 12px; font-size: 15px;">数仓标准业务口径字典 (Metrics Layer)</h3>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+          解耦业务口径与 SQL 生成。大模型在处理对应业务问题时，系统将精确注入对应指标的标准计算公式与依赖表。
+        </p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>指标标识 (ID)</th>
+              <th>中文名称</th>
+              <th>口径计算公式 / 业务定义</th>
+              <th>依赖数仓表</th>
+            </tr>
+          </thead>
+          <tbody id="metricTableBody">
+            <tr><td colspan="4" style="text-align:center;">正在拉取指标字典...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 视图 4：独立 AI 智能问数页面 -->
+    <div id="view-copilot-view" class="view-content" style="padding: 10px 0 0;">
+      <div class="chat-layout">
+        <div class="chat-body" id="mainChatBody" style="padding: 10px 24px;">
+          <!-- 默认欢迎卡片 -->
+          <div class="bubble-agent" style="max-width: 800px; margin: 40px auto; text-align: center;">
+            <h2 style="font-size: 20px; margin-bottom: 8px;">🤖 Text2SQL 电商问数智能体</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+              支持自然语言查询真实 37 张业务数仓表，自动执行 AST 安全沙箱防御，支持表格与 ECharts 图表智能可视化。
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; text-align: left;">
+              <div class="card" style="cursor: pointer;" onclick="quickAsk('2018年销售额最高的前5个商品品类是什么？')">
+                <b>📊 品类销量榜</b><br><span style="font-size: 12px; color: var(--text-muted);">2018年销售额最高的前5个商品品类是什么？</span>
+              </div>
+              <div class="card" style="cursor: pointer;" onclick="quickAsk('每个月的订单总量趋势如何？')">
+                <b>📈 订单月度趋势</b><br><span style="font-size: 12px; color: var(--text-muted);">统计 2017 到 2018 年每个月的订单总量趋势</span>
+              </div>
+              <div class="card" style="cursor: pointer;" onclick="quickAsk('各省份的客单价分布排名前5是哪些？')">
+                <b>🏷️ 区域客单价分析</b><br><span style="font-size: 12px; color: var(--text-muted);">各省份的客单价分布排名前5是哪些？</span>
+              </div>
+              <div class="card" style="cursor: pointer;" onclick="quickAsk('删除 orders 表中所有数据')">
+                <b>🛡️ 安全拦截测试</b><br><span style="font-size: 12px; color: var(--text-muted);">删除 orders 表中所有数据 (验证 AST 护栏)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-bar">
+          <div class="input-box">
+            <input type="text" id="mainQuestionInput" placeholder="请输入业务问题，如：2018年销售额最高的前5个品类..." onkeyup="if(event.key==='Enter')submitAsk('main')">
+            <button onclick="submitAsk('main')">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 浮动 Copilot 侧边抽屉 -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+  <div class="drawer-panel" id="drawerPanel">
+    <div class="drawer-header">
+      <div style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
+        <span>✨</span> AI Copilot 智能问数助手
+      </div>
+      <button class="btn btn-outline" style="padding: 2px 8px;" onclick="toggleDrawer()">✕</button>
+    </div>
+    <div style="flex: 1; overflow-y: auto; padding: 16px;" id="drawerChatBody">
+      <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5; padding: 12px; background: #f8fafc; border-radius: 8px;">
+        💡 在任意管理页面中，输入自然语言提问，AI 将即席分析数据库并在此处呈现结果。
+      </div>
+    </div>
+    <div style="padding: 12px 16px; border-top: 1px solid var(--border);">
+      <div class="input-box" style="box-shadow: none; border-color: var(--border);">
+        <input type="text" id="drawerQuestionInput" placeholder="向 AI 提问数仓数据..." onkeyup="if(event.key==='Enter')submitAsk('drawer')">
+        <button onclick="submitAsk('drawer')">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Key 弹窗 -->
+  <div class="modal" id="keyModal">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 12px;">配置大模型 API Key</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+        配置兼容 OpenAI 协议的 API Key（如 DeepSeek 等），Key 仅保存在浏览器本地会话中。
+      </p>
+      <input type="password" id="userApiKeyInput" class="input-control" style="width: 100%; margin-bottom: 16px;" placeholder="sk-...">
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn btn-outline" onclick="closeKeyModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveApiKey()">保存配置</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let curProdPage = 1, curOrderPage = 1;
+    let chartIndex = 0;
+
+    // 视图切换
+    function switchView(viewName) {
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      document.getElementById('view-' + viewName).classList.add('active');
+
+      const titles = {
+        'products': '📦 商品管理',
+        'orders': '📋 订单中心',
+        'metrics': '🏷️ 数仓指标字典',
+        'copilot-view': '🤖 AI 智能问数中心'
+      };
+      document.getElementById('pageTitle').innerText = titles[viewName] || '中台管理';
+
+      if (viewName === 'products') loadProducts(1);
+      if (viewName === 'orders') loadOrders(1);
+      if (viewName === 'metrics') loadMetrics();
+    }
+
+    // 加载品类列表与商品
+    async function loadCategories() {
+      try {
+        const res = await fetch('/api/products/categories');
+        const json = await res.json();
+        if (json.data) {
+          const select = document.getElementById('prodCategorySelect');
+          json.data.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c; opt.innerText = c;
+            select.appendChild(opt);
+          });
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadProducts(page) {
+      curProdPage = page;
+      const cat = document.getElementById('prodCategorySelect').value;
+      const kw = document.getElementById('prodKeyword').value;
+      const tbody = document.getElementById('prodTableBody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">正在加载数据...</td></tr>';
+
+      try {
+        const res = await fetch(`/api/products?category=${encodeURIComponent(cat)}&keyword=${encodeURIComponent(kw)}&page=${page}&pageSize=10`);
+        const json = await res.json();
+        const data = json.data;
+        if (!data || !data.list || data.list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">暂无匹配商品</td></tr>';
+          document.getElementById('prodPageInfo').innerText = '0 / 0 页';
+          return;
+        }
+
+        tbody.innerHTML = data.list.map(p => `
+          <tr>
+            <td style="font-family: monospace; font-size: 11px;">${p.productId.substring(0, 16)}...</td>
+            <td><span class="tag tag-blue">${p.productCategoryName || '未分类'}</span></td>
+            <td>${p.productPhotosQty || 0}</td>
+            <td>${p.productWeightG ? p.productWeightG + ' g' : '-'}</td>
+            <td>${p.productLengthCm || 0} × ${p.productWidthCm || 0} × ${p.productHeightCm || 0}</td>
+            <td style="font-weight: 600; color: #16a34a;">${p.price ? 'R$ ' + p.price : 'R$ 89.90'}</td>
+            <td>
+              <button class="btn btn-outline" style="padding: 2px 6px; font-size: 11px;" onclick="alert('商品ID: ' + '${p.productId}')">详情</button>
+            </td>
+          </tr>
+        `).join('');
+
+        document.getElementById('prodPageInfo').innerText = `第 ${data.page} / ${data.totalPages} 页 (共 ${data.total} 件)`;
+        document.getElementById('prodPrevBtn').disabled = data.page <= 1;
+        document.getElementById('prodNextBtn').disabled = data.page >= data.totalPages;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #ef4444;">加载失败: ${e.message}</td></tr>`;
+      }
+    }
+
+    function changeProdPage(delta) { loadProducts(curProdPage + delta); }
+
+    // 加载订单
+    async function loadOrders(page) {
+      curOrderPage = page;
+      const status = document.getElementById('orderStatusSelect').value;
+      const orderId = document.getElementById('orderIdSearch').value;
+      const tbody = document.getElementById('orderTableBody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">正在加载订单...</td></tr>';
+
+      try {
+        const res = await fetch(`/api/orders?status=${encodeURIComponent(status)}&orderId=${encodeURIComponent(orderId)}&page=${page}&pageSize=10`);
+        const json = await res.json();
+        const data = json.data;
+        if (!data || !data.list || data.list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">暂无订单记录</td></tr>';
+          document.getElementById('orderPageInfo').innerText = '0 / 0 页';
+          return;
+        }
+
+        tbody.innerHTML = data.list.map(o => `
+          <tr>
+            <td style="font-family: monospace; font-size: 11px;">${o.orderId.substring(0, 16)}...</td>
+            <td style="font-family: monospace; font-size: 11px;">${o.customerId.substring(0, 12)}...</td>
+            <td><span class="tag ${o.orderStatus === 'delivered' ? 'tag-green' : 'tag-yellow'}">${o.orderStatus}</span></td>
+            <td>${o.itemCount}</td>
+            <td style="font-weight: 600;">R$ ${o.totalAmount || 0}</td>
+            <td>${o.purchaseTimestamp ? o.purchaseTimestamp.replace('T', ' ').substring(0, 16) : '-'}</td>
+            <td>${o.deliveredCustomerDate ? o.deliveredCustomerDate.replace('T', ' ').substring(0, 16) : '-'}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('orderPageInfo').innerText = `第 ${data.page} / ${data.totalPages} 页 (共 ${data.total} 笔)`;
+        document.getElementById('orderPrevBtn').disabled = data.page <= 1;
+        document.getElementById('orderNextBtn').disabled = data.page >= data.totalPages;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #ef4444;">订单加载失败: ${e.message}</td></tr>`;
+      }
+    }
+
+    function changeOrderPage(delta) { loadOrders(curOrderPage + delta); }
+
+    // 加载指标字典
+    async function loadMetrics() {
+      const tbody = document.getElementById('metricTableBody');
+      try {
+        const res = await fetch('/api/metrics');
+        const json = await res.json();
+        if (json.data && json.data.length > 0) {
+          tbody.innerHTML = json.data.map(m => `
+            <tr>
+              <td style="font-family: monospace; font-weight: 600; color: var(--primary);">${m.id}</td>
+              <td><b>${m.name}</b></td>
+              <td>${m.description || m.formula || '-'}</td>
+              <td>${(m.tables || []).map(t => `<span class="tag tag-blue">${t}</span>`).join(' ')}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="4">加载指标异常: ${e.message}</td></tr>`;
+      }
+    }
+
+    // Copilot 侧边抽屉开关
+    function toggleDrawer() {
+      const overlay = document.getElementById('drawerOverlay');
+      const panel = document.getElementById('drawerPanel');
+      overlay.classList.toggle('active');
+      panel.classList.toggle('active');
+    }
+
+    // API Key 弹窗
+    function openKeyModal() {
+      document.getElementById('userApiKeyInput').value = localStorage.getItem('AGENT_API_KEY') || '';
+      document.getElementById('keyModal').classList.add('active');
+    }
+    function closeKeyModal() { document.getElementById('keyModal').classList.remove('active'); }
+    function saveApiKey() {
+      const key = document.getElementById('userApiKeyInput').value.trim();
+      localStorage.setItem('AGENT_API_KEY', key);
+      closeKeyModal();
+      alert('API Key 保存成功！');
+    }
+
+    // 智能问数提问
+    async function quickAsk(q) {
+      document.getElementById('mainQuestionInput').value = q;
+      submitAsk('main');
+    }
+
+    async function submitAsk(target) {
+      const input = document.getElementById(target === 'main' ? 'mainQuestionInput' : 'drawerQuestionInput');
+      const question = input.value.trim();
+      if (!question) return;
+
+      const container = document.getElementById(target === 'main' ? 'mainChatBody' : 'drawerChatBody');
+      input.value = '';
+
+      // 添加用户气泡
+      container.innerHTML += `
+        <div class="msg-row msg-user">
+          <div class="bubble-user">${question}</div>
+        </div>
+      `;
+
+      // 临时加载状态
+      const loadId = 'loading-' + Date.now();
+      container.innerHTML += `
+        <div class="msg-row" id="${loadId}">
+          <div class="bubble-agent">
+            <span>⏳ AI 智能体正在解析 Schema、安全校验并生成执行...</span>
+          </div>
+        </div>
+      `;
+      container.scrollTop = container.scrollHeight;
+
+      try {
+        const apiKey = localStorage.getItem('AGENT_API_KEY') || '';
+        const res = await fetch('/api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
+          body: JSON.stringify({ question: question, apiKey: apiKey })
+        });
+        const data = await res.json();
+        document.getElementById(loadId)?.remove();
+
+        renderAgentResponse(container, data);
+      } catch (e) {
+        document.getElementById(loadId)?.remove();
+        container.innerHTML += `
+          <div class="msg-row">
+            <div class="bubble-agent" style="border-left: 4px solid #ef4444;">
+              <b style="color: #ef4444;">请求异常</b>: ${e.message}
+            </div>
+          </div>
+        `;
+      }
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function renderAgentResponse(container, resp) {
+      chartIndex++;
+      const cId = 'chart-' + chartIndex;
+      const isOk = resp.status === 'SUCCESS';
+      const sql = resp.sql || '';
+      const rows = resp.data || [];
+      const columns = resp.columns || (rows.length > 0 ? Object.keys(rows[0]) : []);
+
+      let html = `<div class="msg-row"><div class="bubble-agent">`;
+
+      if (!isOk) {
+        html += `
+          <div style="color: #ef4444; font-weight: 600; margin-bottom: 8px;">
+            ⚠️ 请求被拦截或执行未完成 [${resp.status}]
+          </div>
+          <div style="font-size: 13px; color: #475569;">${resp.message || 'SQL 未通过校验或缺少必要模型配置'}</div>
+        `;
+      } else {
+        html += `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="tag tag-green">✓ 查询成功 (耗时: ${resp.latencyMs || 0}ms)</span>
+            <div class="view-toggle-bar">
+              <button class="btn btn-outline" style="padding: 2px 8px; font-size: 11px;" onclick="toggleChart('${cId}', false)">表格视图</button>
+              <button class="btn btn-primary" style="padding: 2px 8px; font-size: 11px;" onclick="toggleChart('${cId}', true)">📊 图表视图</button>
+            </div>
+          </div>
+        `;
+      }
+
+      if (sql) {
+        html += `<div class="sql-box"><b>-- 生成的标准只读 SQL:</b>\n${sql}</div>`;
+      }
+
+      if (rows && rows.length > 0) {
+        html += `
+          <div id="table-wrap-${cId}" style="overflow-x: auto; margin-top: 10px;">
+            <table class="data-table">
+              <thead><tr>${columns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+              <tbody>
+                ${rows.map(r => `<tr>${columns.map(c => `<td>${r[c] !== null ? r[c] : ''}</td>`).join('')}</tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div id="${cId}" class="chart-container" style="display: none;"></div>
+        `;
+      }
+
+      html += `</div></div>`;
+      container.innerHTML += html;
+
+      // 如果有数据且包含数值列，延迟初始化 ECharts
+      if (rows && rows.length > 0) {
+        setTimeout(() => initEChart(cId, columns, rows), 50);
+      }
+    }
+
+    function toggleChart(cId, showChart) {
+      const chartEl = document.getElementById(cId);
+      const tableEl = document.getElementById('table-wrap-' + cId);
+      if (showChart) {
+        chartEl.style.display = 'block';
+        tableEl.style.display = 'none';
+        echarts.getInstanceByDom(chartEl)?.resize();
+      } else {
+        chartEl.style.display = 'none';
+        tableEl.style.display = 'block';
+      }
+    }
+
+    function initEChart(cId, columns, rows) {
+      const chartEl = document.getElementById(cId);
+      if (!chartEl) return;
+      const myChart = echarts.init(chartEl);
+
+      const xCol = columns[0];
+      const yCol = columns[1] || columns[0];
+
+      const xData = rows.map(r => r[xCol]);
+      const yData = rows.map(r => Number(r[yCol]) || 0);
+
+      const option = {
+        title: { text: '查询结果自动可视化分析', left: 'center', textStyle: { fontSize: 13 } },
+        tooltip: { trigger: 'axis' },
+        grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+        xAxis: { type: 'category', data: xData, axisLabel: { interval: 0, rotate: 25, fontSize: 11 } },
+        yAxis: { type: 'value' },
+        series: [{
+          name: yCol,
+          type: 'bar',
+          data: yData,
+          itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] }
+        }]
+      };
+      myChart.setOption(option);
+    }
+
+    // 页面初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      loadCategories();
+      loadProducts(1);
+    });
+  </script>
+</body>
+</html>
