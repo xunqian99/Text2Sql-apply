@@ -1110,7 +1110,7 @@
           <div style="color: #ff4d4f; font-weight: 600; margin-bottom: 6px;">
             ⚠️ 语句被安全护栏拦截或未完成执行 [${resp.status}]
           </div>
-          <div style="font-size: 13px; color: #595959;">${resp.message || 'SQL 未通过校验或缺少必要模型配置'}</div>
+          <div style="font-size: 13px; color: #595959;">${resp.message || '查询未通过校验或缺少必要模型配置'}</div>
         `;
       } else {
         const ms = (resp.timings && resp.timings.totalMs) || resp.latencyMs || 290;
@@ -1123,10 +1123,6 @@
             </div>
           </div>
         `;
-      }
-
-      if (sql) {
-        html += `<div class="sql-code-block"><b>-- 生成的只读 SQL:</b>\n${sql}</div>`;
       }
 
       if (rows && rows.length > 0) {
