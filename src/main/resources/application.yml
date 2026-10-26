@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ecommerce-admin-agent
+
+  datasource:
+    # 业务管理中台主数据源（具备商品/订单管理与配置的读写权限）
+    url: jdbc:postgresql://localhost:5432/olist
+    username: text2sql
+    password: text2sql
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 10000
+
+  # 显式关闭 Spring AI 的全局自动注入模型（避免启动时因未配 Key 导致容器启动失败）
+  ai:
+    model:
+      chat: none
+      embedding: none
+      image: none
+      audio:
+        speech: none
+        transcription: none
+      moderation: none
+
+agent:
+  # Text2SQL 智能体专用配置
+  sandbox:
+    # 只读沙箱执行账号（严格防御非 SELECT 操作）
+    username: text2sql_ro
+    password: text2sql_ro
+    timeout-seconds: 10
+    max-rows: 200
