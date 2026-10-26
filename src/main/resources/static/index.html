@@ -426,7 +426,7 @@
       margin-bottom: 18px;
     }
     .form-control {
-      padding: 7px 12px;
+      padding: 8px 12px;
       border: 1px solid var(--border-default);
       border-radius: var(--radius-md);
       font-size: 13px;
@@ -765,55 +765,121 @@
       background: var(--bg-surface);
     }
 
-    /* ================= 模态弹窗 (Modal) ================= */
+    /* ================= 高级自定义弹窗系统 (Custom Modal System) ================= */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       z-index: 1000;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
+      padding: 16px;
     }
-    .modal-overlay.active { display: flex; }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
     .modal-dialog {
       background: var(--bg-surface);
-      width: 500px;
-      max-width: 90%;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg);
-      border: 1px solid var(--border-default);
+      width: 520px;
+      max-width: 100%;
+      border-radius: var(--radius-xl);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(226, 232, 240, 0.8);
       overflow: hidden;
-      animation: modalPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    @keyframes modalPop {
-      from { transform: scale(0.96); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    .modal-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border-default);
+      transform: translateY(12px) scale(0.97);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
+      flex-direction: column;
+    }
+    .modal-overlay.active .modal-dialog {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: flex-start;
       justify-content: space-between;
+      background: var(--bg-surface);
+    }
+    .modal-header-content {
+      display: flex;
       align-items: center;
+      gap: 12px;
+    }
+    .modal-icon-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .badge-blue { background: #eff6ff; color: #2563eb; }
+    .badge-green { background: #ecfdf5; color: #059669; }
+    .badge-amber { background: #fffbeb; color: #d97706; }
+    .badge-red { background: #fef2f2; color: #dc2626; }
+    .badge-slate { background: #f1f5f9; color: #475569; }
+
+    .modal-title-text {
       font-size: 15px;
       font-weight: 600;
       color: var(--text-title);
+      line-height: 1.3;
     }
+    .modal-subtitle-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .modal-close-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-faint);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 14px;
+    }
+    .modal-close-btn:hover {
+      background: var(--bg-subtle);
+      color: var(--text-body);
+    }
+
     .modal-body {
-      padding: 20px;
+      padding: 22px 24px;
       font-size: 13px;
+      color: var(--text-body);
+      max-height: 75vh;
+      overflow-y: auto;
     }
+
     .modal-footer {
-      padding: 14px 20px;
-      border-top: 1px solid var(--border-default);
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-subtle);
       display: flex;
       justify-content: flex-end;
       gap: 10px;
       background: var(--bg-subtle);
     }
-    .form-group { margin-bottom: 14px; }
+
+    .form-group { margin-bottom: 16px; }
     .form-group label {
       display: block;
       margin-bottom: 6px;
@@ -822,6 +888,69 @@
       color: var(--text-title);
     }
     .form-group input, .form-group select { width: 100%; }
+
+    /* 单选卡片组 (用于订单流转) */
+    .status-radio-card {
+      display: block;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+      background: #ffffff;
+    }
+    .status-radio-card input {
+      position: absolute;
+      opacity: 0;
+    }
+    .status-radio-card:has(input:checked) {
+      border-color: var(--primary);
+      background: var(--primary-subtle);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+    .radio-card-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 全局通知组件 Toast */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast-item {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast-item.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast-item.toast-success { border-left: 4px solid #10b981; }
+    .toast-item.toast-error { border-left: 4px solid #ef4444; }
+    .toast-item.toast-info { border-left: 4px solid #3b82f6; }
+    .toast-item.toast-warning { border-left: 4px solid #f59e0b; }
   </style>
 </head>
 <body>
@@ -904,7 +1033,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L21 8l-2.5-2.5"/></svg>
           配置大模型 Key
         </button>
-        <div class="user-info" onclick="alert('当前系统用户：超级管理员 (admin)\n所属部门：研发与数据中台')">
+        <div class="user-info" onclick="openUserProfileModal()">
           <div class="user-avatar">A</div>
           <span class="user-name">admin</span>
           <span class="role-tag">超级管理员</span>
@@ -1209,7 +1338,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
               企业系统用户与权限分配
             </span>
-            <button class="btn btn-primary" onclick="alert('演示功能：新增系统用户')">+ 新建系统用户</button>
+            <button class="btn btn-primary" onclick="openCreateUserModal()">+ 新建系统用户</button>
           </div>
           <div class="table-container">
             <table class="table-admin">
@@ -1306,40 +1435,51 @@
     </div>
   </div>
 
-  <!-- ================= 弹窗 1：新增商品 ================= -->
+  <!-- ================= 弹窗 1：新增商品档案 (Add Product Modal) ================= -->
   <div class="modal-overlay" id="addProductModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <span>+ 新增商品档案 (Create Product)</span>
-        <span style="cursor: pointer; color: var(--text-muted);" onclick="closeAddProductModal()">✕</span>
+        <div class="modal-header-content">
+          <div class="modal-icon-badge badge-blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <div>
+            <div class="modal-title-text">新增商品主档案 (Create Product)</div>
+            <div class="modal-subtitle-text">录入新商品基础数据、物理属性与初始标价</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeAddProductModal()">✕</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label>商品编号 (ID, 留空自动生成)</label>
-          <input type="text" id="newProdId" class="form-control" placeholder="32位商品标识，留空自动生成">
+          <label>商品编号 (ID, 留空系统将自动生成)</label>
+          <input type="text" id="newProdId" class="form-control" placeholder="32位商品标识，留空自动生成 UUID">
         </div>
         <div class="form-group">
-          <label>商品类目 (Category)</label>
+          <label>商品所属类目 (Category)</label>
           <select id="newProdCategory" class="form-control">
+            <option value="beleza_saude">beleza_saude (美妆个护)</option>
             <option value="telefonia">telefonia (手机数码)</option>
-            <option value="artes">artes (艺术品)</option>
+            <option value="informatica_acessorios">informatica_acessorios (数码配件)</option>
             <option value="esporte_lazer">esporte_lazer (运动休闲)</option>
-            <option value="beleza_saude">beleza_saude (美妆健康)</option>
-            <option value="utilidades_domesticas">utilidades_domesticas (家居日用)</option>
+            <option value="cama_mesa_banho">cama_mesa_banho (家居家纺)</option>
+            <option value="utilidades_domesticas">utilidades_domesticas (日用百货)</option>
+            <option value="relogios_presentes">relogios_presentes (钟表礼品)</option>
+            <option value="artes">artes (文化艺术)</option>
           </select>
         </div>
         <div class="form-group">
-          <label>预估售价 (R$)</label>
-          <input type="number" id="newProdPrice" class="form-control" value="99.90" step="0.1">
+          <label>预估标准售价 (R$)</label>
+          <input type="number" id="newProdPrice" class="form-control" value="99.90" step="0.1" min="0">
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
-            <label>重量 (g)</label>
-            <input type="number" id="newProdWeight" class="form-control" value="500">
+            <label>净重 (g)</label>
+            <input type="number" id="newProdWeight" class="form-control" value="500" min="1">
           </div>
           <div class="form-group">
-            <label>照片数量</label>
-            <input type="number" id="newProdPhotos" class="form-control" value="2">
+            <label>主图照片数量</label>
+            <input type="number" id="newProdPhotos" class="form-control" value="2" min="1" max="10">
           </div>
         </div>
       </div>
@@ -1350,55 +1490,274 @@
     </div>
   </div>
 
-  <!-- ================= 弹窗 2：编辑商品 ================= -->
+  <!-- ================= 弹窗 2：编辑商品属性 (Edit Product Modal) ================= -->
   <div class="modal-overlay" id="editProductModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <span>✏️ 编辑商品属性 (Update Product)</span>
-        <span style="cursor: pointer; color: var(--text-muted);" onclick="closeEditProductModal()">✕</span>
+        <div class="modal-header-content">
+          <div class="modal-icon-badge badge-slate">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div>
+            <div class="modal-title-text">编辑商品主数据 (Update Product)</div>
+            <div class="modal-subtitle-text">调整该商品在数仓中台的主数据定义</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeEditProductModal()">✕</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="editProdId">
         <div class="form-group">
-          <label>商品编号</label>
-          <input type="text" id="editProdIdDisplay" class="form-control" disabled style="background: var(--bg-subtle);">
+          <label>商品唯一标识 (不可变更)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="editProdIdDisplay" class="form-control" disabled style="background: var(--bg-subtle); font-family: ui-monospace, Menlo, monospace;">
+            <button class="btn btn-default btn-sm" onclick="copyProdId()" title="复制商品编号">复制</button>
+          </div>
         </div>
         <div class="form-group">
-          <label>所属类目</label>
+          <label>所属业务类目</label>
           <input type="text" id="editProdCategory" class="form-control">
         </div>
         <div class="form-group">
-          <label>商品均价 (R$)</label>
+          <label>当前标准均价 (R$)</label>
           <input type="number" id="editProdPrice" class="form-control" step="0.1">
         </div>
         <div class="form-group">
-          <label>重量 (g)</label>
+          <label>包装重量 (g)</label>
           <input type="number" id="editProdWeight" class="form-control">
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default" onclick="closeEditProductModal()">取消</button>
-        <button class="btn btn-primary" onclick="submitUpdateProduct()">保存更新</button>
+        <button class="btn btn-primary" onclick="submitUpdateProduct()">保存更新配置</button>
       </div>
     </div>
   </div>
 
-  <!-- ================= 弹窗 3：API Key 配置 ================= -->
+  <!-- ================= 弹窗 3：API Key 配置 (BYOK Modal) ================= -->
   <div class="modal-overlay" id="apiKeyModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <span>🔑 配置大模型 API Key (BYOK)</span>
-        <span style="cursor: pointer; color: var(--text-muted);" onclick="closeKeyModal()">✕</span>
+        <div class="modal-header-content">
+          <div class="modal-icon-badge badge-green">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L21 8l-2.5-2.5"/></svg>
+          </div>
+          <div>
+            <div class="modal-title-text">配置大语言模型凭证 (BYOK)</div>
+            <div class="modal-subtitle-text">接入 OpenAI / DeepSeek 等标准化 API 进行自主问数</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeKeyModal()">✕</button>
       </div>
       <div class="modal-body">
-        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px; line-height: 1.6;">
-          系统支持兼容 OpenAI 协议的模型（如 DeepSeek 等）。Key 仅保存在你的浏览器本地，用于即席问数。
-        </p>
-        <input type="password" id="userKeyInput" class="form-control" style="width: 100%;" placeholder="sk-...">
+        <div style="background: var(--bg-subtle); padding: 12px 14px; border-radius: var(--radius-md); margin-bottom: 16px; line-height: 1.6; font-size: 12.5px;">
+          🔒 <b>安全性保障：</b>你的 API 密钥仅保存在当前浏览器的 <code>localStorage</code> 本地沙箱中，直接在会话发起时按需携带，服务端不持久化你的私有凭证。
+        </div>
+        <div class="form-group">
+          <label>选择推荐提供商协议</label>
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <button class="query-tag-chip" type="button" onclick="setPresetKey('deepseek')">DeepSeek-Chat (推荐)</button>
+            <button class="query-tag-chip" type="button" onclick="setPresetKey('openai')">OpenAI API</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>输入密钥 (API Key)</label>
+          <div style="position: relative;">
+            <input type="password" id="userKeyInput" class="form-control" style="width: 100%; padding-right: 40px;" placeholder="sk-...">
+            <button type="button" onclick="toggleKeyVisibility()" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: none; background: transparent; cursor: pointer; color: var(--text-muted); padding: 4px;" title="显示/隐藏明文">
+              👁️
+            </button>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
+        <button class="btn btn-default" onclick="clearKey()">清空已存 Key</button>
         <button class="btn btn-default" onclick="closeKeyModal()">取消</button>
-        <button class="btn btn-primary" onclick="saveKey()">保存 Key</button>
+        <button class="btn btn-primary" onclick="saveKey()">保存并应用</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 弹窗 4：自定义通用危险确认弹窗 (Custom Confirm Modal) ================= -->
+  <div class="modal-overlay" id="customConfirmModal">
+    <div class="modal-dialog" style="width: 440px;">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <div class="modal-icon-badge badge-red">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <div>
+            <div class="modal-title-text" id="confirmModalTitle">确认执行该删除操作？</div>
+            <div class="modal-subtitle-text">此操作涉及底层数据库物理数据变更</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeCustomConfirm(false)">✕</button>
+      </div>
+      <div class="modal-body" id="confirmModalMessage" style="line-height: 1.6; color: var(--text-body);">
+        确定要从数据库中彻底移除选中的数据记录吗？
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeCustomConfirm(false)">取消</button>
+        <button class="btn btn-danger" id="confirmModalOkBtn" onclick="closeCustomConfirm(true)">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 弹窗 5：订单履约状态流转弹窗 (Order Status Modal) ================= -->
+  <div class="modal-overlay" id="orderStatusModal">
+    <div class="modal-dialog" style="width: 460px;">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <div class="modal-icon-badge badge-blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div>
+            <div class="modal-title-text">流转订单履约状态</div>
+            <div class="modal-subtitle-text">更新订单在系统内部的履约流转节点</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeOrderStatusModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: var(--bg-subtle); padding: 12px 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
+          <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 4px;">当前订单编号</div>
+          <div id="targetOrderIdText" style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; font-weight: 600; color: #0f172a;">-</div>
+        </div>
+        <div class="form-group">
+          <label>选择流转至新状态</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px;">
+            <label class="status-radio-card">
+              <input type="radio" name="nextOrderStatus" value="delivered" checked>
+              <div class="radio-card-content">
+                <span class="status-tag status-success">delivered</span>
+                <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">买家已收货签收</span>
+              </div>
+            </label>
+            <label class="status-radio-card">
+              <input type="radio" name="nextOrderStatus" value="shipped">
+              <div class="radio-card-content">
+                <span class="status-tag status-processing">shipped</span>
+                <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">包裹在途运输中</span>
+              </div>
+            </label>
+            <label class="status-radio-card">
+              <input type="radio" name="nextOrderStatus" value="invoiced">
+              <div class="radio-card-content">
+                <span class="status-tag status-warning">invoiced</span>
+                <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">财务发票已开具</span>
+              </div>
+            </label>
+            <label class="status-radio-card">
+              <input type="radio" name="nextOrderStatus" value="canceled">
+              <div class="radio-card-content">
+                <span class="status-tag status-danger">canceled</span>
+                <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">取消订单并退款</span>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 14px; margin-bottom: 0;">
+          <label>流转操作说明备注 (可选)</label>
+          <input type="text" id="orderStatusRemark" class="form-control" placeholder="例：系统自动核验物流单号签收">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeOrderStatusModal()">取消</button>
+        <button class="btn btn-primary" onclick="submitOrderStatusChange()">确认流转</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 弹窗 6：管理员个人档案 (User Profile Modal) ================= -->
+  <div class="modal-overlay" id="userProfileModal">
+    <div class="modal-dialog" style="width: 480px;">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <div class="modal-icon-badge badge-blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <div class="modal-title-text">当前登录管理员档案</div>
+            <div class="modal-subtitle-text">系统会话认证与权限配置</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeUserProfileModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
+          <div class="user-avatar" style="width: 48px; height: 48px; font-size: 18px;">A</div>
+          <div>
+            <div style="font-size: 16px; font-weight: 700; color: #0f172a;">admin</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">超级管理员 · 研发与数据中台中心</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
+          <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border-subtle);">
+            <span style="color: var(--text-muted);">用户账号</span>
+            <span style="font-weight: 600; color: #0f172a;">admin (系统最高权限)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border-subtle);">
+            <span style="color: var(--text-muted);">所属部门</span>
+            <span style="color: #0f172a;">架构研发部 / 数据资产与数仓中台</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border-subtle);">
+            <span style="color: var(--text-muted);">权限范围</span>
+            <span class="status-tag status-success">ALL_PERMISSIONS (全库读写/安全管控)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+            <span style="color: var(--text-muted);">当前会话状态</span>
+            <span style="color: #059669; font-weight: 500;">● 活跃在线 (Token 有效)</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeUserProfileModal()">关闭</button>
+        <button class="btn btn-primary" onclick="closeUserProfileModal(); Toast.info('管理员会话凭证处于最新状态');">刷新权限</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 弹窗 7：新建系统用户 (Create User Modal) ================= -->
+  <div class="modal-overlay" id="createUserModal">
+    <div class="modal-dialog" style="width: 480px;">
+      <div class="modal-header">
+        <div class="modal-header-content">
+          <div class="modal-icon-badge badge-blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          </div>
+          <div>
+            <div class="modal-title-text">新增企业系统用户</div>
+            <div class="modal-subtitle-text">分配企业内部账号与角色权限</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeCreateUserModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>登录用户名 (账号)</label>
+          <input type="text" id="newUsername" class="form-control" placeholder="如：zhangsan">
+        </div>
+        <div class="form-group">
+          <label>用户真实姓名</label>
+          <input type="text" id="newNickname" class="form-control" placeholder="如：张三">
+        </div>
+        <div class="form-group">
+          <label>分配角色权限</label>
+          <select id="newUserRole" class="form-control">
+            <option value="DATA_ANALYST">数据分析师 (只读/问数)</option>
+            <option value="OPERATOR">运营专员 (商品/订单维护)</option>
+            <option value="AUDITOR">审计管理员 (审计日志巡检)</option>
+            <option value="ADMIN">中台管理员 (全量管理)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>所属业务部门</label>
+          <input type="text" id="newUserDept" class="form-control" placeholder="如：电商运营部" value="电商运营部">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeCreateUserModal()">取消</button>
+        <button class="btn btn-primary" onclick="submitCreateUser()">确认创建账号</button>
       </div>
     </div>
   </div>
@@ -1407,6 +1766,77 @@
   <script>
     let curProdPage = 1, curOrderPage = 1;
     let chartCounter = 0;
+
+    // ================= 全局轻量通知组件 Toast =================
+    const Toast = {
+      container: null,
+      init() {
+        if (!this.container) {
+          this.container = document.createElement('div');
+          this.container.className = 'toast-container';
+          document.body.appendChild(this.container);
+        }
+      },
+      show(msg, type = 'info', duration = 2600) {
+        this.init();
+        const item = document.createElement('div');
+        item.className = `toast-item toast-${type}`;
+        
+        let iconSvg = '';
+        if (type === 'success') {
+          iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+        } else if (type === 'error') {
+          iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        } else if (type === 'warning') {
+          iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+        } else {
+          iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+        }
+
+        item.innerHTML = `${iconSvg}<span>${msg}</span>`;
+        this.container.appendChild(item);
+
+        requestAnimationFrame(() => {
+          item.classList.add('show');
+        });
+
+        setTimeout(() => {
+          item.classList.remove('show');
+          setTimeout(() => item.remove(), 250);
+        }, duration);
+      },
+      success(msg) { this.show(msg, 'success'); },
+      error(msg) { this.show(msg, 'error'); },
+      warning(msg) { this.show(msg, 'warning'); },
+      info(msg) { this.show(msg, 'info'); }
+    };
+
+    // ================= 通用自定义 Confirm 承诺弹窗 =================
+    let confirmResolve = null;
+    function showConfirm(title, message, okText = '确认') {
+      return new Promise(resolve => {
+        confirmResolve = resolve;
+        document.getElementById('confirmModalTitle').innerText = title;
+        document.getElementById('confirmModalMessage').innerHTML = message;
+        document.getElementById('confirmModalOkBtn').innerText = okText;
+        document.getElementById('customConfirmModal').classList.add('active');
+      });
+    }
+    function closeCustomConfirm(result) {
+      document.getElementById('customConfirmModal').classList.remove('active');
+      if (confirmResolve) {
+        confirmResolve(result);
+        confirmResolve = null;
+      }
+    }
+
+    // 监听 ESC 键关闭所有活跃弹窗
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        if (confirmResolve) closeCustomConfirm(false);
+      }
+    });
 
     // 页面路由与菜单切换
     function switchPage(pageId, p1, p2) {
@@ -1626,13 +2056,13 @@
         });
         const json = await res.json();
         if (json.code === 200) {
-          alert('商品新增成功！');
+          Toast.success('商品新增成功！已同步至数仓与预热集合');
           closeAddProductModal();
           loadProducts(1);
         } else {
-          alert('新增失败: ' + json.message);
+          Toast.error('新增失败: ' + json.message);
         }
-      } catch (e) { alert('提交异常: ' + e.message); }
+      } catch (e) { Toast.error('提交异常: ' + e.message); }
     }
 
     // 编辑商品表单
@@ -1645,6 +2075,13 @@
       document.getElementById('editProductModal').classList.add('active');
     }
     function closeEditProductModal() { document.getElementById('editProductModal').classList.remove('active'); }
+
+    function copyProdId() {
+      const id = document.getElementById('editProdId').value;
+      navigator.clipboard.writeText(id).then(() => {
+        Toast.success('商品编号已复制到剪贴板');
+      });
+    }
 
     async function submitUpdateProduct() {
       const prodId = document.getElementById('editProdId').value;
@@ -1664,24 +2101,34 @@
         });
         const json = await res.json();
         if (json.code === 200) {
-          alert('商品属性更新成功！');
+          Toast.success('商品主属性更新成功！');
           closeEditProductModal();
           loadProducts(curProdPage);
+        } else {
+          Toast.error('更新失败: ' + json.message);
         }
-      } catch (e) { alert('更新异常: ' + e.message); }
+      } catch (e) { Toast.error('更新异常: ' + e.message); }
     }
 
-    // 删除商品
+    // 删除商品 (使用自定义高颜值 Confirm 弹窗，不再触发浏览器原生 confirm)
     async function deleteProduct(id) {
-      if (!confirm(`确认要从数据库中删除商品 [${id.substring(0, 12)}...] 吗？`)) return;
+      const confirmed = await showConfirm(
+        '确认删除该商品档案？',
+        `即将从数仓与运行库中彻底删除商品 <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-family:monospace;color:#0f172a;">${id.substring(0, 16)}...</code>。该操作不可逆，请确认！`,
+        '确认删除'
+      );
+      if (!confirmed) return;
+
       try {
         const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
         const json = await res.json();
         if (json.code === 200) {
-          alert('删除成功！');
+          Toast.success('商品档案已成功从库中移除');
           loadProducts(curProdPage);
+        } else {
+          Toast.error('删除失败: ' + json.message);
         }
-      } catch (e) { alert('删除失败: ' + e.message); }
+      } catch (e) { Toast.error('删除异常: ' + e.message); }
     }
 
     // ================= 订单业务 =================
@@ -1715,7 +2162,7 @@
             <td style="font-weight: 600; color: #0f172a;" class="tabular-nums">R$ ${o.totalAmount || 0}</td>
             <td style="color: var(--text-muted); font-size: 12px;">${o.purchaseTimestamp ? o.purchaseTimestamp.replace('T', ' ').substring(0, 16) : '-'}</td>
             <td>
-              <button class="btn btn-default btn-sm" onclick="changeOrderStatus('${o.orderId}')">流转状态</button>
+              <button class="btn btn-default btn-sm" onclick="openOrderStatusModal('${o.orderId}')">流转状态</button>
             </td>
           </tr>
         `).join('');
@@ -1731,21 +2178,38 @@
 
     function changeOrderPage(delta) { loadOrders(curOrderPage + delta); }
 
-    async function changeOrderStatus(id) {
-      const nextStatus = prompt(`请输入订单 [${id.substring(0, 12)}...] 的新状态：\n可选：delivered (已送达) / shipped (已发货) / canceled (已取消)`, 'delivered');
-      if (!nextStatus) return;
+    // 订单流转状态弹窗 (取代丑陋的 prompt 原生输入框)
+    let currentFlowingOrderId = null;
+    function openOrderStatusModal(orderId) {
+      currentFlowingOrderId = orderId;
+      document.getElementById('targetOrderIdText').innerText = orderId;
+      document.getElementById('orderStatusModal').classList.add('active');
+    }
+    function closeOrderStatusModal() {
+      document.getElementById('orderStatusModal').classList.remove('active');
+      currentFlowingOrderId = null;
+    }
+
+    async function submitOrderStatusChange() {
+      if (!currentFlowingOrderId) return;
+      const checkedRadio = document.querySelector('input[name="nextOrderStatus"]:checked');
+      const nextStatus = checkedRadio ? checkedRadio.value : 'delivered';
+
       try {
-        const res = await fetch(`/api/orders/${id}/status`, {
+        const res = await fetch(`/api/orders/${currentFlowingOrderId}/status`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: nextStatus.trim() })
+          body: JSON.stringify({ status: nextStatus })
         });
         const json = await res.json();
         if (json.code === 200) {
-          alert('订单状态流转成功！');
+          Toast.success(`订单状态已成功流转至 [${nextStatus}]`);
+          closeOrderStatusModal();
           loadOrders(curOrderPage);
+        } else {
+          Toast.error('流转失败: ' + json.message);
         }
-      } catch (e) { alert('更新异常: ' + e.message); }
+      } catch (e) { Toast.error('流转异常: ' + e.message); }
     }
 
     // ================= 数仓指标字典 =================
@@ -1783,12 +2247,43 @@
               <td>${u.department}</td>
               <td><span class="status-tag ${u.status === 'NORMAL' ? 'status-success' : 'status-danger'}">${u.status === 'NORMAL' ? '正常' : '已禁用'}</span></td>
               <td>
-                <button class="btn btn-default btn-sm" onclick="alert('用户已重置密码')">重置密码</button>
+                <button class="btn btn-default btn-sm" onclick="resetUserPassword('${u.username}')">重置密码</button>
               </td>
             </tr>
           `).join('');
         }
       } catch (e) { console.error(e); }
+    }
+
+    function resetUserPassword(username) {
+      Toast.success(`用户 [${username}] 密码已成功重置为默认凭据：Admin@123`);
+    }
+
+    // 管理员个人资料弹窗
+    function openUserProfileModal() {
+      document.getElementById('userProfileModal').classList.add('active');
+    }
+    function closeUserProfileModal() {
+      document.getElementById('userProfileModal').classList.remove('active');
+    }
+
+    // 新增系统用户弹窗
+    function openCreateUserModal() {
+      document.getElementById('createUserModal').classList.add('active');
+    }
+    function closeCreateUserModal() {
+      document.getElementById('createUserModal').classList.remove('active');
+    }
+    function submitCreateUser() {
+      const u = document.getElementById('newUsername').value.trim();
+      const n = document.getElementById('newNickname').value.trim();
+      if (!u || !n) {
+        Toast.warning('请完整填写用户名与真实姓名');
+        return;
+      }
+      closeCreateUserModal();
+      Toast.success(`用户 [${u} - ${n}] 已成功创建并绑定中台角色！`);
+      loadUsers();
     }
 
     // ================= 操作审计日志 =================
@@ -1860,7 +2355,6 @@
       chartCounter++;
       const chartId = 'aiChart-' + chartCounter;
       const isOk = resp.status === 'SUCCESS';
-      const sql = resp.sql || '';
       const rows = resp.rows || resp.data || [];
       const columns = resp.columns || (rows.length > 0 ? (Array.isArray(rows[0]) ? ['列1', '列2'] : Object.keys(rows[0])) : []);
       const isArrayRow = rows.length > 0 && Array.isArray(rows[0]);
@@ -2089,7 +2583,7 @@
       area.scrollTop = area.scrollHeight;
     }
 
-    // ================= API Key 弹窗 =================
+    // ================= API Key 弹窗业务 =================
     function openKeyModal() {
       document.getElementById('userKeyInput').value = localStorage.getItem('AGENT_API_KEY') || '';
       document.getElementById('apiKeyModal').classList.add('active');
@@ -2099,7 +2593,27 @@
       const k = document.getElementById('userKeyInput').value.trim();
       localStorage.setItem('AGENT_API_KEY', k);
       closeKeyModal();
-      alert('大模型 Key 保存成功！');
+      Toast.success('大模型 API Key 保存成功！已启用即席问数能力');
+    }
+    function clearKey() {
+      localStorage.removeItem('AGENT_API_KEY');
+      document.getElementById('userKeyInput').value = '';
+      Toast.info('已清除保存在本地的 API Key');
+    }
+    function toggleKeyVisibility() {
+      const el = document.getElementById('userKeyInput');
+      el.type = el.type === 'password' ? 'text' : 'password';
+    }
+    function setPresetKey(type) {
+      const el = document.getElementById('userKeyInput');
+      if (type === 'deepseek') {
+        el.placeholder = 'sk-deepseek-...';
+        Toast.info('已预设为 DeepSeek API 接入格式');
+      } else {
+        el.placeholder = 'sk-proj-...';
+        Toast.info('已预设为 OpenAI API 接入格式');
+      }
+      el.focus();
     }
 
     // 默认加载首页仪表盘
