@@ -2289,7 +2289,7 @@
               </tbody>
             </table>
           </div>
-          <div id="${chartId}" style="height: 320px; width: 100%; display: none; margin-top: 12px;"></div>
+          <div id="${chartId}" style="height: 350px; width: 100%; display: none; margin-top: 12px;"></div>
         `;
       }
 
@@ -2375,7 +2375,7 @@
 
       myChart.setOption({
         title: {
-          text: '智能问数统计可视化',
+          text: '智能问数统计可视化 (' + yCol + ')',
           left: 'center',
           textStyle: { fontSize: 13, fontWeight: '700', color: '#303133' }
         },
@@ -2383,33 +2383,55 @@
           trigger: 'axis',
           formatter: function(params) {
             const p = params[0];
-            return `${p.name}<br/>${yCol}: <b>${p.value}</b>`;
+            return `<b>${p.name}</b><br/>${yCol}: <b>${Number(p.value).toLocaleString()}</b>`;
           }
         },
-        grid: { left: '4%', right: '4%', bottom: '20%', containLabel: true },
+        grid: { left: '3%', right: '4%', bottom: '26%', top: '16%', containLabel: true },
         xAxis: {
           type: 'category',
           data: xData,
           axisLine: { lineStyle: { color: '#dcdfe6' } },
           axisLabel: {
             interval: 0,
-            rotate: 20,
+            rotate: 0,
             fontSize: 11,
             color: '#606266',
+            lineHeight: 15,
             formatter: function(val) {
-              return val.length > 16 ? val.substring(0, 14) + '...' : val;
+              if (!val) return '';
+              // 如果包含括号解释，如 "beleza_saude (美妆个护)"，拆分为两行完整显示，不截断
+              if (val.includes(' (')) {
+                return val.replace(' (', '\n(');
+              }
+              // 如果较长，按每 11 个字符自动折行，绝不使用省略号截断
+              if (val.length > 11) {
+                let res = '';
+                const step = 10;
+                for (let i = 0; i < val.length; i += step) {
+                  res += val.substring(i, i + step) + (i + step < val.length ? '\n' : '');
+                }
+                return res;
+              }
+              return val;
             }
           }
         },
         yAxis: {
           type: 'value',
           splitLine: { lineStyle: { color: '#ebeef5' } },
-          axisLabel: { color: '#606266', fontSize: 11 }
+          axisLabel: {
+            color: '#606266',
+            fontSize: 11,
+            formatter: function(val) {
+              return Number(val).toLocaleString();
+            }
+          }
         },
         series: [{
           name: yCol,
           type: 'bar',
           data: yData,
+          barMaxWidth: 65,
           itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: '#409eff' },
@@ -2422,7 +2444,10 @@
             position: 'top',
             fontSize: 11,
             color: '#303133',
-            fontWeight: '700'
+            fontWeight: '700',
+            formatter: function(p) {
+              return Number(p.value).toLocaleString();
+            }
           }
         }]
       });
