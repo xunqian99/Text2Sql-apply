@@ -423,6 +423,37 @@
     .page-view { display: none; }
     .page-view.active { display: block; }
 
+    /* AI 问数工作台全屏工作区布局 (输入栏底置) */
+    #page-ai-query.active {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 118px);
+    }
+    #page-ai-query .el-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0;
+      min-height: 0;
+    }
+    #page-ai-query #aiChatArea {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 6px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .ai-input-bar-wrap {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
     /* 经典后台面板 Card */
     .el-card {
       background: var(--bg-card);
@@ -1293,10 +1324,9 @@
           </div>
 
           <!-- 预置快捷问题检索面板 -->
-          <div style="background: #f8fafc; border: 1px dashed #dcdfe6; border-radius: 4px; padding: 12px 14px; margin-bottom: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div style="background: #f8fafc; border: 1px dashed #dcdfe6; border-radius: 4px; padding: 12px 14px; margin-bottom: 12px;">
+            <div style="margin-bottom: 8px;">
               <span style="font-weight: 700; color: #303133; font-size: 12.5px;"><i class="ri-lightbulb-line" style="color: #e6a23c; margin-right: 4px;"></i> 点击快捷检索数仓全量数据（涵盖 37 张表 / 150 万真实电商样本）：</span>
-              <span class="el-tag el-tag-primary"><i class="ri-bar-chart-box-line"></i> 支持数据明细与统计图表自由切换</span>
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -1327,17 +1357,13 @@
             </div>
           </div>
 
-          <!-- 对话流输出区 -->
-          <div id="aiChatArea" style="min-height: 280px; max-height: 520px; overflow-y: auto; padding: 6px 0; display: flex; flex-direction: column; gap: 12px;">
-            <div id="aiWelcomeMsg" style="text-align: center; color: var(--text-secondary); font-size: 13px; margin: 40px 0;">
-              输入自然语言业务问题，AI 将自动检索 37 张数仓表、执行 AST 安全白名单校验并渲染数据表格与统计图表。
-            </div>
-          </div>
+          <!-- 对话流输出区 (全高度弹性拉伸) -->
+          <div id="aiChatArea"></div>
 
-          <!-- 输入栏 -->
-          <div style="display: flex; gap: 10px; margin-top: 14px;">
-            <input type="text" id="aiQuestionInput" class="el-input" style="flex: 1; height: 34px;" placeholder="请输入你要分析的业务问题，如：2018年销售额最高的前5个品类..." onkeyup="if(event.key==='Enter')submitMainAiQuery()">
-            <button class="el-button el-button-primary" onclick="submitMainAiQuery()">
+          <!-- 输入栏 (卡片底部常驻) -->
+          <div class="ai-input-bar-wrap">
+            <input type="text" id="aiQuestionInput" class="el-input" style="flex: 1; height: 36px;" placeholder="请输入你要分析的业务问题，如：2018年销售额最高的前5个品类..." onkeyup="if(event.key==='Enter')submitMainAiQuery()">
+            <button class="el-button el-button-primary" style="height: 36px; padding: 0 18px;" onclick="submitMainAiQuery()">
               <i class="ri-send-plane-2-fill"></i> 发送提问
             </button>
           </div>
