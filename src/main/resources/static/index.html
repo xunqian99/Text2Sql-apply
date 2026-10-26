@@ -733,6 +733,76 @@
       color: #909399;
     }
 
+    /* ================= 企业级 Element UI 浮层提示组件 (el-tooltip) ================= */
+    .corp-tooltip {
+      position: fixed;
+      z-index: 999999;
+      background: #303133;
+      color: #ffffff;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-family: Consolas, Monaco, "SFMono-Regular", "Liberation Mono", Menlo, Courier, monospace;
+      border-radius: 4px;
+      line-height: 1.45;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      pointer-events: none;
+      max-width: 520px;
+      word-break: break-all;
+      white-space: pre-wrap;
+      opacity: 0;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      transform: translateY(4px);
+    }
+    .corp-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .corp-tooltip::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      border: 5px solid transparent;
+      left: var(--arrow-left, 50%);
+      transform: translateX(-50%);
+    }
+    .corp-tooltip.arrow-top::after {
+      top: 100%;
+      border-top-color: #303133;
+    }
+    .corp-tooltip.arrow-bottom::after {
+      bottom: 100%;
+      border-bottom-color: #303133;
+    }
+
+    /* 单元格截断与悬浮提示样式 (show-overflow-tooltip) */
+    .cell-overflow {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      max-width: 100%;
+      cursor: pointer;
+      border-radius: 2px;
+      padding: 1px 4px;
+      margin: -1px -4px;
+      transition: background-color 0.12s ease, color 0.12s ease;
+      vertical-align: middle;
+    }
+    .cell-overflow:hover {
+      background-color: #ecf5ff;
+      color: var(--el-blue) !important;
+    }
+    .cell-overflow:hover i.copy-icon {
+      opacity: 0.85;
+    }
+    .cell-overflow i.copy-icon {
+      font-size: 11px;
+      color: #909399;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      margin-left: 2px;
+    }
+
     /* 经典分页条 (el-pagination) */
     .corp-pagination-bar {
       display: flex;
@@ -1710,6 +1780,9 @@
     </div>
   </div>
 
+  <!-- ================= 全局 Element UI 风格浮层提示 (el-tooltip) ================= -->
+  <div id="corpTooltip" class="corp-tooltip" style="display: none;"></div>
+
   <!-- ================= 核心 JavaScript 业务逻辑 ================= -->
   <script>
     let curProdPage = 1, curOrderPage = 1;
@@ -1775,6 +1848,161 @@
         if (confirmResolve) closeCustomConfirm(false);
       }
     });
+
+    // ================= 企业级 Element UI 浮层提示组件 Tooltip (el-tooltip) =================
+    let activeTooltipTarget = null;
+    let tooltipHideTimer = null;
+    let hoverDebounceTimer = null;
+
+    function showCorpTooltip(el, text, title = '') {
+      let tooltip = document.getElementById('corpTooltip');
+      if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'corpTooltip';
+        tooltip.className = 'corp-tooltip';
+        document.body.appendChild(tooltip);
+      }
+      if (!text) return;
+
+      clearTimeout(tooltipHideTimer);
+      activeTooltipTarget = el;
+
+      let contentHtml = '';
+      if (title) {
+        contentHtml += `<div style="font-size: 11px; color: #a8abb2; margin-bottom: 3px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${escapeHtml(title)}</div>`;
+      }
+      contentHtml += `<div style="font-weight: 500; user-select: text;">${escapeHtml(text)}</div>`;
+      contentHtml += `<div style="font-size: 10.5px; color: #909399; margin-top: 4px; border-top: 1px solid #484b51; padding-top: 3px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; gap: 4px;"><i class="ri-file-copy-line"></i> 点击即可复制完整内容</div>`;
+
+      tooltip.innerHTML = contentHtml;
+      tooltip.style.display = 'block';
+      tooltip.className = 'corp-tooltip';
+
+      const rect = el.getBoundingClientRect();
+      const tooltipRect = tooltip.getBoundingClientRect();
+
+      let top = rect.top - tooltipRect.height - 8;
+      let placement = 'arrow-top';
+
+      if (top < 8) {
+        top = rect.bottom + 8;
+        placement = 'arrow-bottom';
+      }
+
+      let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+      if (left < 10) left = 10;
+      if (left + tooltipRect.width > window.innerWidth - 10) {
+        left = window.innerWidth - tooltipRect.width - 10;
+      }
+
+      const arrowOffset = (rect.left + rect.width / 2) - left;
+      tooltip.style.setProperty('--arrow-left', `${arrowOffset}px`);
+      tooltip.style.top = `${top}px`;
+      tooltip.style.left = `${left}px`;
+      tooltip.classList.add(placement);
+
+      requestAnimationFrame(() => {
+        tooltip.classList.add('visible');
+      });
+    }
+
+    function hideCorpTooltip() {
+      const tooltip = document.getElementById('corpTooltip');
+      if (!tooltip) return;
+      tooltip.classList.remove('visible');
+      tooltipHideTimer = setTimeout(() => {
+        if (!tooltip.classList.contains('visible')) {
+          tooltip.style.display = 'none';
+          activeTooltipTarget = null;
+        }
+      }, 150);
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // 全局悬浮与单元格截断监听
+    document.addEventListener('mouseover', function(e) {
+      const target = e.target.closest('[data-tooltip]');
+      if (target) {
+        const text = target.getAttribute('data-tooltip');
+        const title = target.getAttribute('data-tooltip-title') || '';
+        if (text) {
+          clearTimeout(hoverDebounceTimer);
+          hoverDebounceTimer = setTimeout(() => {
+            showCorpTooltip(target, text, title);
+          }, 60);
+          return;
+        }
+      }
+
+      // 自动检测表格内任何带有省略号或文本溢出的单元格
+      const cell = e.target.closest('td');
+      if (cell && !cell.hasAttribute('data-tooltip') && !cell.querySelector('[data-tooltip]')) {
+        const text = cell.innerText.trim();
+        if (text.endsWith('...') || cell.scrollWidth > cell.clientWidth) {
+          if (text.length > 5) {
+            clearTimeout(hoverDebounceTimer);
+            hoverDebounceTimer = setTimeout(() => {
+              showCorpTooltip(cell, text, '单元格完整内容');
+            }, 100);
+          }
+        }
+      }
+    });
+
+    document.addEventListener('mouseout', function(e) {
+      const target = e.target.closest('[data-tooltip], td');
+      if (target) {
+        clearTimeout(hoverDebounceTimer);
+        hideCorpTooltip();
+      }
+    });
+
+    window.addEventListener('scroll', hideCorpTooltip, true);
+    window.addEventListener('resize', hideCorpTooltip);
+
+    // 点击复制完整文本
+    document.addEventListener('click', function(e) {
+      const copyEl = e.target.closest('.copyable, [data-copy]');
+      if (!copyEl) return;
+      const text = copyEl.getAttribute('data-copy') || copyEl.getAttribute('data-tooltip') || copyEl.innerText.trim();
+      if (!text) return;
+
+      const title = copyEl.getAttribute('data-tooltip-title') || '内容';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          Toast.success(`已复制${title}到剪贴板`);
+        }).catch(() => {
+          copyFallback(text, title);
+        });
+      } else {
+        copyFallback(text, title);
+      }
+    });
+
+    function copyFallback(text, title) {
+      try {
+        const input = document.createElement('textarea');
+        input.value = text;
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        Toast.success(`已复制${title}到剪贴板`);
+      } catch (err) {
+        console.error('复制失败', err);
+      }
+    }
 
     // ================= 侧边栏折叠/展开与图表全局自适应 =================
     function toggleSidebarCollapse() {
@@ -1997,7 +2225,11 @@
         tbody.innerHTML = data.list.map(p => `
           <tr>
             <td style="text-align:center;"><input type="checkbox"></td>
-            <td style="font-family: monospace; font-size: 12px; font-weight: 600; color: #303133;">${p.productId.substring(0, 16)}...</td>
+            <td style="font-family: monospace; font-size: 12px; font-weight: 600; color: #303133;">
+              <span class="cell-overflow copyable" data-tooltip="${escapeHtml(p.productId)}" data-tooltip-title="完整商品主键 (Product ID)" data-copy="${escapeHtml(p.productId)}">
+                ${p.productId.substring(0, 16)}...<i class="ri-file-copy-line copy-icon"></i>
+              </span>
+            </td>
             <td><span class="el-tag el-tag-primary">${p.productCategoryName || '未分类'}</span></td>
             <td>${p.productPhotosQty || 0}</td>
             <td>${p.productWeightG ? p.productWeightG + ' g' : '-'}</td>
@@ -2147,8 +2379,16 @@
         tbody.innerHTML = data.list.map(o => `
           <tr>
             <td style="text-align:center;"><input type="checkbox"></td>
-            <td style="font-family: monospace; font-size: 12px; font-weight: 600; color: #303133;">${o.orderId.substring(0, 16)}...</td>
-            <td style="font-family: monospace; font-size: 12px; color: #909399;">${o.customerId.substring(0, 12)}...</td>
+            <td style="font-family: monospace; font-size: 12px; font-weight: 600; color: #303133;">
+              <span class="cell-overflow copyable" data-tooltip="${escapeHtml(o.orderId)}" data-tooltip-title="完整订单编号 (Order ID)" data-copy="${escapeHtml(o.orderId)}">
+                ${o.orderId.substring(0, 16)}...<i class="ri-file-copy-line copy-icon"></i>
+              </span>
+            </td>
+            <td style="font-family: monospace; font-size: 12px; color: #909399;">
+              <span class="cell-overflow copyable" data-tooltip="${escapeHtml(o.customerId)}" data-tooltip-title="完整买家 ID (Customer ID)" data-copy="${escapeHtml(o.customerId)}">
+                ${o.customerId.substring(0, 12)}...<i class="ri-file-copy-line copy-icon"></i>
+              </span>
+            </td>
             <td>
               <span class="el-tag ${o.orderStatus === 'delivered' ? 'el-tag-success' : (o.orderStatus === 'canceled' ? 'el-tag-danger' : 'el-tag-warning')}">
                 ${o.orderStatus}
@@ -2216,10 +2456,14 @@
         if (json.data) {
           tbody.innerHTML = json.data.map(m => `
             <tr>
-              <td style="font-family: monospace; font-weight: 700; color: var(--el-blue); font-size: 12px;">${m.id}</td>
-              <td style="font-weight: 700; color: #303133;">${m.name}</td>
-              <td style="color: #606266; line-height: 1.5;">${m.description || m.formula || '-'}</td>
-              <td>${(m.tables || []).map(t => `<span class="el-tag el-tag-primary" style="margin: 2px;">${t}</span>`).join('')}</td>
+              <td style="font-family: monospace; font-weight: 700; color: var(--el-blue); font-size: 12px;">
+                <span class="cell-overflow copyable" data-tooltip="${escapeHtml(m.id)}" data-tooltip-title="指标英文标识" data-copy="${escapeHtml(m.id)}">${escapeHtml(m.id)}</span>
+              </td>
+              <td style="font-weight: 700; color: #303133;">${escapeHtml(m.name)}</td>
+              <td style="color: #606266; line-height: 1.5;" data-tooltip="${escapeHtml(m.description || m.formula || '')}" data-tooltip-title="${escapeHtml(m.name)} 计算口径">
+                ${escapeHtml(m.description || m.formula || '-')}
+              </td>
+              <td>${(m.tables || []).map(t => `<span class="el-tag el-tag-primary" style="margin: 2px;">${escapeHtml(t)}</span>`).join('')}</td>
             </tr>
           `).join('');
         }
@@ -2281,12 +2525,16 @@
           tbody.innerHTML = json.data.map(l => `
             <tr>
               <td style="color: #909399; font-size: 12px;">#${l.id}</td>
-              <td style="font-weight: 700; color: #303133;">${l.operator}</td>
-              <td><span class="el-tag el-tag-primary">${l.action}</span></td>
-              <td style="font-family: monospace; font-size: 12px; color: #606266;">${l.detail}</td>
-              <td style="color: #909399; font-size: 12px;">${l.ip}</td>
+              <td style="font-weight: 700; color: #303133;">${escapeHtml(l.operator)}</td>
+              <td><span class="el-tag el-tag-primary">${escapeHtml(l.action)}</span></td>
+              <td style="font-family: monospace; font-size: 12px; color: #606266;">
+                <span class="cell-overflow copyable" data-tooltip="${escapeHtml(l.detail)}" data-tooltip-title="操作审计参数" data-copy="${escapeHtml(l.detail)}">
+                  ${escapeHtml(l.detail.length > 28 ? l.detail.substring(0, 26) + '...' : l.detail)}<i class="ri-file-copy-line copy-icon"></i>
+                </span>
+              </td>
+              <td style="color: #909399; font-size: 12px;">${escapeHtml(l.ip)}</td>
               <td><span class="el-tag ${l.status === 'SUCCESS' ? 'el-tag-success' : 'el-tag-danger'}">${l.status}</span></td>
-              <td style="color: #909399; font-size: 12px;">${l.time}</td>
+              <td style="color: #909399; font-size: 12px;">${escapeHtml(l.time)}</td>
             </tr>
           `).join('');
         }
@@ -2383,8 +2631,27 @@
               <thead><tr>${columns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
               <tbody>
                 ${rows.map(r => `<tr>${columns.map((c, idx) => {
-                  const val = isArrayRow ? r[idx] : r[c];
-                  return `<td>${val !== null && val !== undefined ? val : ''}</td>`;
+                  const rawVal = isArrayRow ? r[idx] : r[c];
+                  const valStr = rawVal !== null && rawVal !== undefined ? String(rawVal) : '';
+                  const colName = String(c || '');
+                  const isId = (colName.toLowerCase().includes('id') || valStr.length > 20) && !valStr.includes(' ') && valStr.length > 16;
+                  if (isId) {
+                    const shortVal = valStr.substring(0, 16) + '...';
+                    return `<td style="font-family: monospace; font-size: 12px;">
+                      <span class="cell-overflow copyable" data-tooltip="${escapeHtml(valStr)}" data-tooltip-title="${escapeHtml(colName)}" data-copy="${escapeHtml(valStr)}">
+                        ${shortVal}<i class="ri-file-copy-line copy-icon"></i>
+                      </span>
+                    </td>`;
+                  }
+                  if (valStr.length > 32) {
+                    const shortVal = valStr.substring(0, 30) + '...';
+                    return `<td>
+                      <span class="cell-overflow copyable" data-tooltip="${escapeHtml(valStr)}" data-tooltip-title="${escapeHtml(colName)}" data-copy="${escapeHtml(valStr)}">
+                        ${escapeHtml(shortVal)}
+                      </span>
+                    </td>`;
+                  }
+                  return `<td>${escapeHtml(valStr)}</td>`;
                 }).join('')}</tr>`).join('')}
               </tbody>
             </table>
