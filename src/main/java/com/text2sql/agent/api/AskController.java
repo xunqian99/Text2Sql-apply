@@ -1,5 +1,8 @@
 package com.text2sql.agent.api;
 
+import com.ecommerce.platform.common.DatabaseProbe;
+import com.text2sql.agent.config.AgentProperties;
+import com.text2sql.agent.config.AppConfig;
 import com.text2sql.agent.orchestrator.AgentResponse;
 import com.text2sql.agent.orchestrator.Text2SqlOrchestrator;
 import com.text2sql.agent.session.SessionStore;
@@ -27,23 +30,13 @@ import java.util.List;
  * 这里只做三件事：把 JSON 变成字符串、把 {@link AgentResponse} 变成 HTTP 响应、
  * 把内部状态码映射成合适的状态码。
  *
- * <p><b>为什么这里没有 try-catch 兜异常</b>
- *
- * <p>因为编排层已经保证不抛异常了——所有失败都以 {@code status} 的形式
- * 返回。这是刻意的设计：如果这里再包一层 try-catch，就会出现「同一类错误
- * 有两个处理路径」，一个走异常、一个走状态码，日志里会看到两种形态，
- * 排查时先要判断这次走的是哪条路。异常处理集中在一处（见
- * {@code ApiExceptionHandler}），状态映射集中在这里。
- *
  * <p><b>HTTP 状态码的映射规则</b>
  *
  * <ul>
  *   <li>200 —— 链路跑通并拿到结果。</li>
- *   <li>422 —— SQL 被安全校验拦下。语义上「请求本身合法，但生成的内容不可用」，
- *       用 422 比 400 更准确，也方便前端区分「你问得不对」和「系统生成的 SQL 被拦了」。</li>
- *   <li>503 —— 未配置 LLM。这是环境问题，用 503（服务不可用）能让运维一眼看出
- *       该去配 Key，而不是去查业务逻辑。返回 500 会误导排查方向。</li>
- *   <li>502 —— LLM 调用失败或数据库执行失败。上游依赖出了问题。</li>
+ *   <li>422 —— SQL 被安全校验拦下。</li>
+ *   <li>503 —— 未配置 LLM。</li>
+ *   <li>502 —— LLM 调用失败或数据库执行失败。</li>
  * </ul>
  */
 @RestController
@@ -51,17 +44,19 @@ import java.util.List;
 public class AskController {
 
     private final Text2SqlOrchestrator orchestrator;
+    private final DatabaseProbe databaseProbe;
+    private final AgentProperties properties;
 
-    public AskController(Text2SqlOrchestrator orchestrator) {
+    public AskController(Text2SqlOrchestrator orchestrator,
+                         DatabaseProbe databaseProbe,
+                         AgentProperties properties) {
         this.orchestrator = orchestrator;
+        this.databaseProbe = databaseProbe;
+        this.properties = properties;
     }
 
     /**
      * 把中文问题翻译成 SQL 并执行。
-     *
-     * <p>请求体形如 {@code {"question": "2018 年有多少笔订单？"}}。
-     * 用 record 而不是 Map 接参数，是为了让校验注解生效——{@code @NotBlank}
-     * 只对 Bean 属性有效，Map 拿不到这个能力，空问题会一路传到 LLM 才失败。
      */
     @PostMapping("/ask")
     public ResponseEntity<AskResponse> ask(
@@ -70,6 +65,18 @@ public class AskController {
         String apiKey = (request.apiKey() != null && !request.apiKey().isBlank())
                 ? request.apiKey()
                 : headerApiKey;
+
+        boolean hasApiKey = (apiKey != null && !apiKey.isBlank()) || AppConfig.llmConfigured(properties);
+        boolean dbReady = databaseProbe.isDbAvailable();
+
+        // 【冷启动极速免等待】：若数据库离线或未配置模型 API Key，直接由冷启动缓存引擎返回数仓真实检索结果，0ms 零等待
+        if (!hasApiKey || !dbReady) {
+            AskResponse demo = getDemoResponse(request.question(), request.sessionId());
+            if (demo != null) {
+                return ResponseEntity.ok(demo);
+            }
+        }
+
         AgentResponse response = orchestrator.ask(request.question(), request.sessionId(), apiKey);
         if (Boolean.TRUE.equals(request.endSession()) && request.sessionId() != null) {
             orchestrator.closeSession(request.sessionId());
