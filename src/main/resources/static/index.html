@@ -3,403 +3,756 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>电商运营与智能问数中台系统 (E-Commerce Ops & AI Platform)</title>
-  <!-- ECharts 5 动态图表引擎 -->
+  <title>电商运营中台管理系统 (E-Commerce Management System)</title>
+  <!-- ECharts 5 统计图表库 -->
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <style>
     :root {
-      --sidebar-bg: #1e222d;
-      --sidebar-hover: #2a2f3d;
-      --sidebar-active: #3b82f6;
-      --sidebar-text: #e2e8f0;
-      --sidebar-muted: #94a3b8;
-      --main-bg: #f8fafc;
+      --sidebar-bg: #001529;
+      --sidebar-sub: #000c17;
+      --sidebar-hover: #1890ff;
+      --sidebar-text: #rgba(255, 255, 255, 0.65);
+      --primary: #1890ff;
+      --primary-hover: #40a9ff;
+      --success: #52c41a;
+      --warning: #faad14;
+      --danger: #f5222d;
+      --bg-color: #f0f2f5;
       --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --accent-green: #10b981;
-      --sql-bg: #1e1e1e;
+      --text-title: #1f2937;
+      --text-body: #4b5563;
+      --text-muted: #9ca3af;
+      --border-color: #e5e7eb;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      height: 100vh; display: flex; overflow: hidden; background: var(--main-bg); color: var(--text-main);
+      height: 100vh; display: flex; overflow: hidden; background: var(--bg-color); color: var(--text-body);
     }
 
-    /* 侧边导航栏 */
+    /* 经典左侧侧边栏 (Element/Ant Design 风格) */
     aside.sidebar {
-      width: 250px; background: var(--sidebar-bg); color: var(--sidebar-text);
-      display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #2d3748;
+      width: 230px; background: var(--sidebar-bg); color: #fff;
+      display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.2s;
+      box-shadow: 2px 0 6px rgba(0,21,41,0.35); z-index: 10;
     }
-    .brand {
-      padding: 20px 18px; display: flex; align-items: center; gap: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.08); font-weight: 700; font-size: 15px; letter-spacing: 0.5px;
+    .sidebar-brand {
+      height: 56px; display: flex; align-items: center; padding: 0 16px; gap: 10px;
+      background: #002140; font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; overflow: hidden;
     }
-    .brand-icon {
-      width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    .brand-logo {
+      width: 30px; height: 30px; border-radius: 6px; background: var(--primary);
       display: flex; align-items: center; justify-content: center; font-size: 16px;
     }
-    .nav-list { flex: 1; padding: 16px 10px; display: flex; flex-direction: column; gap: 6px; }
-    .nav-header { font-size: 11px; text-transform: uppercase; color: var(--sidebar-muted); padding: 8px 12px; font-weight: 600; letter-spacing: 0.5px; }
-    .nav-btn {
-      display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 8px;
-      color: #cbd5e1; font-size: 14px; font-weight: 500; cursor: pointer; border: 0; background: transparent;
-      width: 100%; text-align: left; transition: all 0.15s;
+    .menu-group { flex: 1; overflow-y: auto; padding: 12px 0; }
+    .menu-title {
+      font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.45);
+      padding: 8px 16px 4px; font-weight: 600; letter-spacing: 0.5px;
     }
-    .nav-btn:hover { background: var(--sidebar-hover); color: #fff; }
-    .nav-btn.active { background: var(--sidebar-active); color: #fff; }
-    .nav-btn .badge {
-      margin-left: auto; font-size: 10px; padding: 2px 6px; border-radius: 10px; background: rgba(255,255,255,0.2);
+    .menu-item {
+      display: flex; align-items: center; gap: 10px; padding: 12px 18px; color: rgba(255,255,255,0.75);
+      font-size: 13.5px; cursor: pointer; transition: all 0.2s; user-select: none;
+    }
+    .menu-item:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .menu-item.active { color: #fff; background: var(--primary); font-weight: 600; }
+    .menu-item .menu-badge {
+      margin-left: auto; font-size: 10px; padding: 2px 6px; border-radius: 10px;
+      background: rgba(255,255,255,0.25);
+    }
+    .menu-badge.badge-ai { background: linear-gradient(135deg, #722ed1, #eb2f96); }
+
+    /* 主内容区与顶部导航 */
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    header.navbar {
+      height: 56px; background: #fff; border-bottom: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+      flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,21,41,0.05); z-index: 9;
+    }
+    .nav-left { display: flex; align-items: center; gap: 16px; }
+    .breadcrumb { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .breadcrumb span.current { color: var(--text-title); font-weight: 600; }
+
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .btn-key {
+      padding: 5px 12px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px;
+      background: #fff; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+    }
+    .btn-key:hover { border-color: var(--primary); color: var(--primary); }
+    .user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%; background: #1890ff; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;
+    }
+    .user-name { font-size: 13px; font-weight: 500; color: var(--text-title); }
+    .role-tag {
+      font-size: 11px; padding: 1px 6px; border-radius: 4px; background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff;
     }
 
-    /* 顶部与主体容器 */
-    .app-main { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
-    header.top-header {
-      height: 56px; background: #fff; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;
-    }
-    .header-title { font-size: 16px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px; }
-    .header-actions { display: flex; align-items: center; gap: 12px; }
+    /* 视图切换容器 */
+    .content-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+    .page-view { display: none; }
+    .page-view.active { display: block; }
 
+    /* 通用后台组件卡片 */
+    .card {
+      background: var(--card-bg); border-radius: 6px; padding: 20px;
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); margin-bottom: 18px; border: 1px solid var(--border-color);
+    }
+    .card-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0; padding-bottom: 12px;
+    }
+    .card-title { font-size: 15px; font-weight: 600; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
+
+    /* 按钮与表单控件 */
     .btn {
-      padding: 7px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; border: 1px solid transparent;
+      padding: 6px 14px; border-radius: 4px; font-size: 13px; font-weight: 500; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; border: 1px solid transparent;
     }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-hover); }
-    .btn-outline { background: #fff; border-color: var(--border); color: #334155; }
-    .btn-outline:hover { background: #f1f5f9; border-color: #cbd5e1; }
-    .btn-copilot {
-      background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+    .btn-default { background: #fff; border-color: #d9d9d9; color: #595959; }
+    .btn-default:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-danger { background: #ff4d4f; color: #fff; }
+    .btn-danger:hover { background: #ff7875; }
+    .btn-sm { padding: 3px 8px; font-size: 12px; }
+
+    .form-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .form-control {
+      padding: 6px 11px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px;
+      outline: none; background: #fff; transition: border 0.2s; min-width: 180px;
     }
-    .btn-copilot:hover { opacity: 0.92; transform: translateY(-1px); }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
 
-    /* 视图区域 */
-    .view-content { flex: 1; overflow-y: auto; padding: 20px 24px; display: none; }
-    .view-content.active { display: block; }
-
-    /* 表格与过滤组件 */
-    .card {
-      background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-      padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 20px;
+    /* 经典数据表格 */
+    table.table-admin { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    table.table-admin th {
+      background: #fafafa; border-bottom: 1px solid #f0f0f0; padding: 12px 14px; font-weight: 600; color: #262626;
     }
-    .filter-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
-    .input-control, .select-control {
-      padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none;
-      background: #fff; color: #334155; min-width: 180px;
+    table.table-admin td { border-bottom: 1px solid #f0f0f0; padding: 10px 14px; color: #595959; }
+    table.table-admin tr:hover { background: #fafafa; }
+
+    /* 状态徽标 */
+    .status-tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+    .status-success { background: #f6ffed; border: 1px solid #b7eb8f; color: #52c41a; }
+    .status-processing { background: #e6f7ff; border: 1px solid #91d5ff; color: #1890ff; }
+    .status-warning { background: #fffbe6; border: 1px solid #ffe58f; color: #faad14; }
+    .status-danger { background: #fff1f0; border: 1px solid #ffa39e; color: #f5222d; }
+
+    .pagination-bar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 16px; font-size: 13px; }
+
+    /* 首页仪表盘卡片网格 */
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+    .stat-card {
+      background: #fff; border-radius: 6px; padding: 18px 20px; border: 1px solid var(--border-color);
+      display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden;
     }
-    .input-control:focus, .select-control:focus { border-color: var(--primary); }
-
-    table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    table.data-table th { background: #f8fafc; border-bottom: 1px solid var(--border); padding: 10px 14px; font-weight: 600; color: #475569; }
-    table.data-table td { border-bottom: 1px solid #f1f5f9; padding: 9px 14px; color: #1e293b; }
-    table.data-table tr:hover { background: #f8fafc; }
-
-    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-    .tag-blue { background: #eff6ff; color: #1d4ed8; }
-    .tag-green { background: #ecfdf5; color: #047857; }
-    .tag-yellow { background: #fffbeb; color: #b45309; }
-
-    .pagination { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 14px; font-size: 13px; }
-
-    /* AI 问数工作台样式 */
-    .chat-layout { display: flex; flex-direction: column; height: 100%; }
-    .chat-body { flex: 1; overflow-y: auto; padding-bottom: 110px; display: flex; flex-direction: column; gap: 20px; }
-    .msg-row { display: flex; gap: 14px; max-width: 900px; margin: 0 auto; width: 100%; }
-    .msg-user { justify-content: flex-end; }
-    .bubble-user { background: #f1f5f9; border-radius: 18px; padding: 10px 18px; font-size: 14px; }
-    .bubble-agent { flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
-    
-    .sql-box { background: var(--sql-bg); border-radius: 6px; padding: 12px 16px; margin: 10px 0; font-family: monospace; font-size: 12px; color: #f8fafc; line-height: 1.5; overflow-x: auto; }
-    .chart-container { width: 100%; height: 320px; margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
-    .view-toggle-bar { display: flex; gap: 8px; margin: 8px 0; }
-
-    .chat-input-bar {
-      position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 40%);
-      padding: 16px 24px 20px; display: flex; justify-content: center;
+    .stat-card-title { font-size: 13px; color: var(--text-muted); }
+    .stat-card-value { font-size: 26px; font-weight: 700; color: var(--text-title); font-family: -apple-system, sans-serif; }
+    .stat-card-sub { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .stat-card-icon {
+      position: absolute; right: 16px; top: 18px; font-size: 28px; opacity: 0.2;
     }
-    .input-box {
-      max-width: 900px; width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 24px;
-      padding: 8px 16px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-    .input-box input { flex: 1; border: 0; outline: 0; font-size: 14px; }
-    .input-box button { background: var(--primary); color: #fff; border: 0; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
 
-    /* Copilot 侧边抽屉 */
-    .drawer-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none;
+    .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .chart-box { height: 320px; width: 100%; }
+
+    /* 弹窗对话框 Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000;
+      display: none; align-items: center; justify-content: center; backdrop-filter: blur(1px);
     }
-    .drawer-overlay.active { display: block; }
-    .drawer-panel {
-      position: fixed; top: 0; right: -550px; width: 550px; height: 100%; background: #fff;
-      box-shadow: -4px 0 20px rgba(0,0,0,0.1); z-index: 101; transition: right 0.25s ease-out;
+    .modal-overlay.active { display: flex; }
+    .modal-dialog {
+      background: #fff; width: 500px; max-width: 90%; border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; animation: popIn 0.2s ease-out;
+    }
+    @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-header {
+      padding: 14px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;
+      font-size: 15px; font-weight: 600; color: var(--text-title);
+    }
+    .modal-body { padding: 20px; font-size: 13px; }
+    .modal-footer {
+      padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px;
+      background: #fafafa;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 12.5px; color: var(--text-title); }
+    .form-group input, .form-group select { width: 100%; }
+
+    /* 右下角悬浮 AI Copilot 助手球 */
+    .floating-copilot-btn {
+      position: fixed; bottom: 24px; right: 28px; width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, #1890ff, #722ed1); color: #fff; box-shadow: 0 4px 16px rgba(24,144,255,0.4);
+      display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer;
+      z-index: 99; transition: transform 0.2s;
+    }
+    .floating-copilot-btn:hover { transform: scale(1.1); }
+
+    /* 抽屉式侧边 Copilot */
+    .copilot-drawer {
+      position: fixed; top: 0; right: -560px; width: 560px; height: 100%; background: #fff;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15); z-index: 1001; transition: right 0.25s ease-out;
       display: flex; flex-direction: column;
     }
-    .drawer-panel.active { right: 0; }
-    .drawer-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .copilot-drawer.active { right: 0; }
+    .drawer-header {
+      padding: 14px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;
+      background: #fafafa;
+    }
+    .drawer-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .drawer-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; background: #fff; }
 
-    /* 弹窗 */
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 200; }
-    .modal.active { display: flex; }
-    .modal-card { background: #fff; border-radius: 10px; width: 440px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+    /* 问数气泡与代码块 */
+    .chat-bubble-user {
+      align-self: flex-end; background: #e6f7ff; color: #002766; padding: 9px 15px; border-radius: 16px 16px 2px 16px;
+      font-size: 13.5px; max-width: 85%;
+    }
+    .chat-bubble-ai {
+      align-self: flex-start; background: #fff; border: 1px solid #e8e8e8; padding: 14px; border-radius: 16px 16px 16px 2px;
+      font-size: 13px; max-width: 100%; width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .sql-code-block {
+      background: #1e1e1e; color: #f8fafc; border-radius: 6px; padding: 10px 14px; font-family: monospace;
+      font-size: 12px; line-height: 1.5; margin: 8px 0; overflow-x: auto;
+    }
   </style>
 </head>
 <body>
 
-  <!-- 侧边导航 -->
+  <!-- 左侧经典管理系统导航 -->
   <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-icon">🛍️</div>
-      <span>电商运营与智能分析中台</span>
+    <div class="sidebar-brand">
+      <div class="brand-logo">🏬</div>
+      <span>电商运营管理中台</span>
     </div>
-    <div class="nav-list">
-      <div class="nav-header">业务管理中心 (CRUD)</div>
-      <button class="nav-btn active" onclick="switchView('products')">
-        <span>📦</span> 商品管理
-      </button>
-      <button class="nav-btn" onclick="switchView('orders')">
-        <span>📋</span> 订单中心
-      </button>
-      <button class="nav-btn" onclick="switchView('metrics')">
-        <span>🏷️</span> 数仓指标字典
-      </button>
+    <div class="menu-group">
+      <div class="menu-title">控制面板</div>
+      <div class="menu-item active" onclick="switchPage('dashboard', '系统首页', '控制台 / 仪表盘')">
+        <span>📊</span> 控制台 / 仪表盘
+      </div>
 
-      <div class="nav-header" style="margin-top: 14px;">AI 智能分析中枢</div>
-      <button class="nav-btn" onclick="switchView('copilot-view')">
-        <span>🤖</span> AI 智能问数 (Text2SQL)
-        <span class="badge">Agent</span>
-      </button>
+      <div class="menu-title">业务中心</div>
+      <div class="menu-item" onclick="switchPage('products', '业务中心', '商品管理')">
+        <span>📦</span> 商品中心管理
+      </div>
+      <div class="menu-item" onclick="switchPage('orders', '业务中心', '订单履约中心')">
+        <span>📋</span> 订单履约中心
+      </div>
+      <div class="menu-item" onclick="switchPage('metrics', '数据资产', '数仓业务指标字典')">
+        <span>🏷️</span> 数仓指标字典
+      </div>
+
+      <div class="menu-title">智能助手</div>
+      <div class="menu-item" onclick="switchPage('ai-query', '智能分析', 'Text2SQL 问数中心')">
+        <span>🤖</span> AI 智能问数分析
+        <span class="menu-badge badge-ai">Agent</span>
+      </div>
+
+      <div class="menu-title">系统管理</div>
+      <div class="menu-item" onclick="switchPage('users', '系统管理', '用户与权限')">
+        <span>👥</span> 用户与角色管理
+      </div>
+      <div class="menu-item" onclick="switchPage('logs', '系统管理', '操作审计日志')">
+        <span>📜</span> 系统操作审计日志
+      </div>
     </div>
   </aside>
 
-  <!-- 主体工作区 -->
-  <div class="app-main">
-    <header class="top-header">
-      <div class="header-title" id="pageTitle">📦 商品管理</div>
-      <div class="header-actions">
-        <button class="btn btn-outline" onclick="openKeyModal()">
-          🔑 模型 API Key
+  <!-- 右侧主界面 -->
+  <div class="main-wrapper">
+    <!-- 顶部导航栏 -->
+    <header class="navbar">
+      <div class="nav-left">
+        <div class="breadcrumb" id="breadcrumb">
+          <span>系统首页</span> / <span class="current">控制台 / 仪表盘</span>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button class="btn-key" onclick="openKeyModal()">
+          <span>🔑</span> 配置大模型 Key
         </button>
-        <button class="btn btn-copilot" onclick="toggleDrawer()">
-          ✨ 唤起 AI Copilot 助手
-        </button>
+        <div class="user-info" onclick="alert('当前系统用户：超级管理员 (admin)\n所属部门：研发与数据中台')">
+          <div class="user-avatar">A</div>
+          <span class="user-name">admin</span>
+          <span class="role-tag">超级管理员</span>
+        </div>
       </div>
     </header>
 
-    <!-- 视图 1：商品管理 -->
-    <div id="view-products" class="view-content active">
-      <div class="card">
-        <div class="filter-bar">
-          <select id="prodCategorySelect" class="select-control" onchange="loadProducts(1)">
-            <option value="">全部商品品类</option>
-          </select>
-          <input type="text" id="prodKeyword" class="input-control" placeholder="搜索商品ID或品类..." onkeyup="if(event.key==='Enter')loadProducts(1)">
-          <button class="btn btn-primary" onclick="loadProducts(1)">查询</button>
-          <button class="btn btn-outline" onclick="openAddProductModal()">+ 新增商品</button>
+    <!-- 主展示工作区 -->
+    <div class="content-body">
+
+      <!-- ================= 视图 1：控制台 / 仪表盘 ================= -->
+      <div id="page-dashboard" class="page-view active">
+        <!-- 核心统计卡片 -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span class="stat-card-title">商品库总量</span>
+            <span class="stat-card-value" id="kpiProducts">32,951</span>
+            <div class="stat-card-sub"><span style="color: var(--success);">↑ 12.5%</span> 较上月持续上新</div>
+            <div class="stat-card-icon">📦</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-title">累计订单交易笔数</span>
+            <span class="stat-card-value" id="kpiOrders">99,441</span>
+            <div class="stat-card-sub"><span style="color: var(--success);">↑ 8.2%</span> 履约率 98.4%</div>
+            <div class="stat-card-icon">📋</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-title">总交易额 GMV (R$)</span>
+            <span class="stat-card-value" id="kpiGmv">15,843,520</span>
+            <div class="stat-card-sub"><span style="color: var(--success);">↑ 15.3%</span> 客单价 R$ 159.3</div>
+            <div class="stat-card-icon">💰</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-title">AI 智能问数服务量</span>
+            <span class="stat-card-value" id="kpiAi">1,256</span>
+            <div class="stat-card-sub"><span style="color: var(--primary);">0ms</span> 缓存命中率 53%</div>
+            <div class="stat-card-icon">🤖</div>
+          </div>
         </div>
 
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>商品 ID</th>
-              <th>商品类目</th>
-              <th>照片数</th>
-              <th>重量 (g)</th>
-              <th>尺寸 (长×宽×高 cm)</th>
-              <th>均价 (R$)</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="prodTableBody">
-            <tr><td colspan="7" style="text-align:center; padding: 20px;">正在加载数据...</td></tr>
-          </tbody>
-        </table>
-
-        <div class="pagination">
-          <span id="prodPageInfo">第 1 页</span>
-          <button class="btn btn-outline" id="prodPrevBtn" onclick="changeProdPage(-1)">上一页</button>
-          <button class="btn btn-outline" id="prodNextBtn" onclick="changeProdPage(1)">下一页</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 视图 2：订单中心 -->
-    <div id="view-orders" class="view-content">
-      <div class="card">
-        <div class="filter-bar">
-          <select id="orderStatusSelect" class="select-control" onchange="loadOrders(1)">
-            <option value="">全部订单状态</option>
-            <option value="delivered">已送达 (delivered)</option>
-            <option value="shipped">已发货 (shipped)</option>
-            <option value="canceled">已取消 (canceled)</option>
-            <option value="invoiced">已开票 (invoiced)</option>
-          </select>
-          <input type="text" id="orderIdSearch" class="input-control" placeholder="根据订单号模糊搜索..." onkeyup="if(event.key==='Enter')loadOrders(1)">
-          <button class="btn btn-primary" onclick="loadOrders(1)">查询</button>
+        <!-- ECharts 大图表排版 -->
+        <div class="chart-grid">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📈 电商月度销售额走势分析 (GMV Trend)</span>
+              <span class="status-tag status-processing">近半年数据</span>
+            </div>
+            <div id="dashboardTrendChart" class="chart-box"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🥧 核心商品品类占比分布</span>
+            </div>
+            <div id="dashboardPieChart" class="chart-box"></div>
+          </div>
         </div>
 
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>订单号</th>
-              <th>买家 ID</th>
-              <th>订单状态</th>
-              <th>商品件数</th>
-              <th>总金额 (R$)</th>
-              <th>下单时间</th>
-              <th>签收时间</th>
-            </tr>
-          </thead>
-          <tbody id="orderTableBody">
-            <tr><td colspan="7" style="text-align:center; padding: 20px;">点击查询加载订单...</td></tr>
-          </tbody>
-        </table>
-
-        <div class="pagination">
-          <span id="orderPageInfo">第 1 页</span>
-          <button class="btn btn-outline" id="orderPrevBtn" onclick="changeOrderPage(-1)">上一页</button>
-          <button class="btn btn-outline" id="orderNextBtn" onclick="changeOrderPage(1)">下一页</button>
+        <!-- 系统快捷与通知 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📢 系统运行状态与通知</span>
+            <span class="status-tag status-success">系统运行正常 (UP)</span>
+          </div>
+          <p style="font-size: 13px; line-height: 1.6; color: var(--text-body);">
+            欢迎使用本电商中台管理系统。系统整合了传统的商品维护、订单中心、权限审计模块，并内嵌领先的 <b>Text2SQL 电商问数智能体</b>。你可以随时点击右下角的 <b>🤖 悬浮助手</b> 进行即席业务查数与图表绘制！
+          </p>
         </div>
       </div>
-    </div>
 
-    <!-- 视图 3：指标字典 -->
-    <div id="view-metrics" class="view-content">
-      <div class="card">
-        <h3 style="margin-bottom: 12px; font-size: 15px;">数仓标准业务口径字典 (Metrics Layer)</h3>
-        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-          解耦业务口径与 SQL 生成。大模型在处理对应业务问题时，系统将精确注入对应指标的标准计算公式与依赖表。
-        </p>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>指标标识 (ID)</th>
-              <th>中文名称</th>
-              <th>口径计算公式 / 业务定义</th>
-              <th>依赖数仓表</th>
-            </tr>
-          </thead>
-          <tbody id="metricTableBody">
-            <tr><td colspan="4" style="text-align:center;">正在拉取指标字典...</td></tr>
-          </tbody>
-        </table>
+      <!-- ================= 视图 2：商品管理 ================= -->
+      <div id="page-products" class="page-view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📦 商品中心管理列表</span>
+            <button class="btn btn-primary" onclick="openAddProductModal()">+ 新增商品</button>
+          </div>
+
+          <div class="form-row">
+            <select id="prodCategoryFilter" class="form-control" onchange="loadProducts(1)">
+              <option value="">全部商品类目</option>
+            </select>
+            <input type="text" id="prodKeywordInput" class="form-control" placeholder="按商品ID或类目搜索..." onkeyup="if(event.key==='Enter')loadProducts(1)">
+            <button class="btn btn-primary" onclick="loadProducts(1)">🔍 查询</button>
+            <button class="btn btn-default" onclick="resetProdFilter()">重置</button>
+          </div>
+
+          <table class="table-admin">
+            <thead>
+              <tr>
+                <th>商品编号 (ID)</th>
+                <th>商品类目</th>
+                <th>照片数</th>
+                <th>重量 (g)</th>
+                <th>尺寸规格 (长×宽×高)</th>
+                <th>当前均价</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="prodTableBody">
+              <tr><td colspan="7" style="text-align: center; padding: 20px;">正在加载商品数据...</td></tr>
+            </tbody>
+          </table>
+
+          <div class="pagination-bar">
+            <span id="prodPageSummary">共 0 条</span>
+            <button class="btn btn-default btn-sm" id="btnProdPrev" onclick="changeProdPage(-1)">上一页</button>
+            <span id="prodCurrentPageNum" style="font-weight: 600;">1</span>
+            <button class="btn btn-default btn-sm" id="btnProdNext" onclick="changeProdPage(1)">下一页</button>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- 视图 4：独立 AI 智能问数页面 -->
-    <div id="view-copilot-view" class="view-content" style="padding: 10px 0 0;">
-      <div class="chat-layout">
-        <div class="chat-body" id="mainChatBody" style="padding: 10px 24px;">
-          <!-- 默认欢迎卡片 -->
-          <div class="bubble-agent" style="max-width: 800px; margin: 40px auto; text-align: center;">
-            <h2 style="font-size: 20px; margin-bottom: 8px;">🤖 Text2SQL 电商问数智能体</h2>
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
-              支持自然语言查询真实 37 张业务数仓表，自动执行 AST 安全沙箱防御，支持表格与 ECharts 图表智能可视化。
-            </p>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; text-align: left;">
-              <div class="card" style="cursor: pointer;" onclick="quickAsk('2018年销售额最高的前5个商品品类是什么？')">
-                <b>📊 品类销量榜</b><br><span style="font-size: 12px; color: var(--text-muted);">2018年销售额最高的前5个商品品类是什么？</span>
-              </div>
-              <div class="card" style="cursor: pointer;" onclick="quickAsk('每个月的订单总量趋势如何？')">
-                <b>📈 订单月度趋势</b><br><span style="font-size: 12px; color: var(--text-muted);">统计 2017 到 2018 年每个月的订单总量趋势</span>
-              </div>
-              <div class="card" style="cursor: pointer;" onclick="quickAsk('各省份的客单价分布排名前5是哪些？')">
-                <b>🏷️ 区域客单价分析</b><br><span style="font-size: 12px; color: var(--text-muted);">各省份的客单价分布排名前5是哪些？</span>
-              </div>
-              <div class="card" style="cursor: pointer;" onclick="quickAsk('删除 orders 表中所有数据')">
-                <b>🛡️ 安全拦截测试</b><br><span style="font-size: 12px; color: var(--text-muted);">删除 orders 表中所有数据 (验证 AST 护栏)</span>
-              </div>
+      <!-- ================= 视图 3：订单中心 ================= -->
+      <div id="page-orders" class="page-view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📋 订单履约中心</span>
+          </div>
+
+          <div class="form-row">
+            <select id="orderStatusFilter" class="form-control" onchange="loadOrders(1)">
+              <option value="">全部订单状态</option>
+              <option value="delivered">已送达 (delivered)</option>
+              <option value="shipped">已发货 (shipped)</option>
+              <option value="invoiced">已开票 (invoiced)</option>
+              <option value="canceled">已取消 (canceled)</option>
+            </select>
+            <input type="text" id="orderIdFilter" class="form-control" placeholder="输入订单编号模糊查询..." onkeyup="if(event.key==='Enter')loadOrders(1)">
+            <button class="btn btn-primary" onclick="loadOrders(1)">🔍 查询</button>
+          </div>
+
+          <table class="table-admin">
+            <thead>
+              <tr>
+                <th>订单编号</th>
+                <th>买家 ID</th>
+                <th>状态</th>
+                <th>商品件数</th>
+                <th>订单总金额</th>
+                <th>下单时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="orderTableBody">
+              <tr><td colspan="7" style="text-align:center; padding: 20px;">加载订单数据...</td></tr>
+            </tbody>
+          </table>
+
+          <div class="pagination-bar">
+            <span id="orderPageSummary">共 0 条</span>
+            <button class="btn btn-default btn-sm" id="btnOrderPrev" onclick="changeOrderPage(-1)">上一页</button>
+            <span id="orderCurrentPageNum" style="font-weight: 600;">1</span>
+            <button class="btn btn-default btn-sm" id="btnOrderNext" onclick="changeOrderPage(1)">下一页</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 视图 4：数仓指标字典 ================= -->
+      <div id="page-metrics" class="page-view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🏷️ 数仓业务指标注册表 (Metrics Layer)</span>
+            <span class="status-tag status-processing">共 23 项业务口径</span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+            系统通过标准指标字典解耦业务口径与 SQL 生成，确保 AI 智能体在计算 GMV、客单价、复购率时 100% 遵守企业定义的财务与运营口径。
+          </p>
+          <table class="table-admin">
+            <thead>
+              <tr>
+                <th>指标标识</th>
+                <th>指标名称</th>
+                <th>业务定义与计算公式</th>
+                <th>依赖底层表</th>
+              </tr>
+            </thead>
+            <tbody id="metricsTableBody">
+              <tr><td colspan="4" style="text-align:center;">加载中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ================= 视图 5：AI 智能问数中心 ================= -->
+      <div id="page-ai-query" class="page-view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🤖 Text2SQL 智能问数分析工作台</span>
+            <span class="status-tag status-success">加权外键图规划 + AST 安全沙箱护栏</span>
+          </div>
+
+          <!-- 推荐问题引导 -->
+          <div style="background: #fafafa; border: 1px dashed #d9d9d9; border-radius: 6px; padding: 14px; margin-bottom: 16px;">
+            <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">💡 点击快捷体验经典业务问题：</div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-default btn-sm" onclick="askAiQuery('2018年销售额最高的前5个商品品类是什么？')">📊 2018年销量前5品类</button>
+              <button class="btn btn-default btn-sm" onclick="askAiQuery('统计2017到2018年每个月的订单总量趋势')">📈 月度订单趋势走势</button>
+              <button class="btn btn-default btn-sm" onclick="askAiQuery('各省份的客单价分布排名前5是哪些？')">🏷️ 省份客单价分布</button>
+              <button class="btn btn-danger btn-sm" onclick="askAiQuery('删除 orders 表中所有数据')">🛡️ 安全防御拦截测试</button>
             </div>
           </div>
-        </div>
 
-        <div class="chat-input-bar">
-          <div class="input-box">
-            <input type="text" id="mainQuestionInput" placeholder="请输入业务问题，如：2018年销售额最高的前5个品类..." onkeyup="if(event.key==='Enter')submitAsk('main')">
-            <button onclick="submitAsk('main')">➤</button>
+          <!-- 对话流展示区域 -->
+          <div id="aiChatArea" style="min-height: 280px; max-height: 480px; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; gap: 14px;">
+            <div style="text-align: center; color: var(--text-muted); font-size: 13px; margin: 40px 0;">
+              输入自然语言业务问题，AI 将自动检索 37 张数仓表、执行 AST 安全白名单校验并渲染数据表格与统计图表。
+            </div>
+          </div>
+
+          <!-- 输入栏 -->
+          <div class="form-row" style="margin-top: 16px; margin-bottom: 0;">
+            <input type="text" id="aiQuestionInput" class="form-control" style="flex: 1;" placeholder="请输入你要分析的业务问题，如：2018年销售额最高的前5个品类..." onkeyup="if(event.key==='Enter')submitMainAiQuery()">
+            <button class="btn btn-primary" onclick="submitMainAiQuery()">🚀 发送提问</button>
           </div>
         </div>
       </div>
+
+      <!-- ================= 视图 6：用户与权限管理 ================= -->
+      <div id="page-users" class="page-view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">👥 企业系统用户与权限分配</span>
+            <button class="btn btn-primary" onclick="alert('演示功能：新增系统用户')">+ 新建系统用户</button>
+          </div>
+          <table class="table-admin">
+            <thead>
+              <tr>
+                <th>用户编号</th>
+                <th>登录账号</th>
+                <th>用户姓名</th>
+                <th>分配角色</th>
+                <th>所属部门</th>
+                <th>账号状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody">
+              <tr><td colspan="7" style="text-align:center;">正在加载用户列表...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ================= 视图 7：系统操作审计日志 ================= -->
+      <div id="page-logs" class="page-view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📜 系统操作审计与安全日志</span>
+          </div>
+          <table class="table-admin">
+            <thead>
+              <tr>
+                <th>日志编号</th>
+                <th>操作人</th>
+                <th>操作动作</th>
+                <th>详细描述</th>
+                <th>来源 IP</th>
+                <th>状态</th>
+                <th>记录时间</th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody">
+              <tr><td colspan="7" style="text-align:center;">正在拉取审计日志...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- 浮动 Copilot 侧边抽屉 -->
-  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
-  <div class="drawer-panel" id="drawerPanel">
+  <!-- 右下角悬浮 Copilot 助手球 -->
+  <div class="floating-copilot-btn" title="唤起 AI 智能分析抽屉" onclick="toggleCopilotDrawer()">
+    🤖
+  </div>
+
+  <!-- 侧边 Copilot 抽屉 -->
+  <div class="copilot-drawer" id="copilotDrawer">
     <div class="drawer-header">
-      <div style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
-        <span>✨</span> AI Copilot 智能问数助手
+      <div style="font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+        <span>🤖</span> AI Copilot 即席问数助手
       </div>
-      <button class="btn btn-outline" style="padding: 2px 8px;" onclick="toggleDrawer()">✕</button>
+      <button class="btn btn-default btn-sm" onclick="toggleCopilotDrawer()">✕ 关闭</button>
     </div>
-    <div style="flex: 1; overflow-y: auto; padding: 16px;" id="drawerChatBody">
-      <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5; padding: 12px; background: #f8fafc; border-radius: 8px;">
-        💡 在任意管理页面中，输入自然语言提问，AI 将即席分析数据库并在此处呈现结果。
+    <div class="drawer-body" id="drawerChatArea">
+      <div style="font-size: 13px; color: var(--text-muted); background: #f9f9f9; padding: 12px; border-radius: 6px;">
+        💡 无论在商品、订单还是仪表盘页面，随时在此向 AI 提问即可生成报表与图表。
       </div>
     </div>
-    <div style="padding: 12px 16px; border-top: 1px solid var(--border);">
-      <div class="input-box" style="box-shadow: none; border-color: var(--border);">
-        <input type="text" id="drawerQuestionInput" placeholder="向 AI 提问数仓数据..." onkeyup="if(event.key==='Enter')submitAsk('drawer')">
-        <button onclick="submitAsk('drawer')">➤</button>
+    <div class="drawer-footer">
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="drawerInput" class="form-control" style="flex: 1;" placeholder="向 AI 提问数仓数据..." onkeyup="if(event.key==='Enter')submitDrawerAiQuery()">
+        <button class="btn btn-primary" onclick="submitDrawerAiQuery()">发送</button>
       </div>
     </div>
   </div>
 
-  <!-- API Key 弹窗 -->
-  <div class="modal" id="keyModal">
-    <div class="modal-card">
-      <h3 style="margin-bottom: 12px;">配置大模型 API Key</h3>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
-        配置兼容 OpenAI 协议的 API Key（如 DeepSeek 等），Key 仅保存在浏览器本地会话中。
-      </p>
-      <input type="password" id="userApiKeyInput" class="input-control" style="width: 100%; margin-bottom: 16px;" placeholder="sk-...">
-      <div style="display: flex; justify-content: flex-end; gap: 8px;">
-        <button class="btn btn-outline" onclick="closeKeyModal()">取消</button>
-        <button class="btn btn-primary" onclick="saveApiKey()">保存配置</button>
+  <!-- 弹窗 1：新增商品弹窗表单 -->
+  <div class="modal-overlay" id="addProductModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span>+ 新增商品档案 (Create Product)</span>
+        <span style="cursor: pointer;" onclick="closeAddProductModal()">✕</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>商品编号 (ID, 留空自动生成)</label>
+          <input type="text" id="newProdId" class="form-control" placeholder="32位商品标识，留空自动生成">
+        </div>
+        <div class="form-group">
+          <label>商品类目 (Category)</label>
+          <select id="newProdCategory" class="form-control">
+            <option value="telefonia">telefonia (手机数码)</option>
+            <option value="artes">artes (艺术品)</option>
+            <option value="esporte_lazer">esporte_lazer (运动休闲)</option>
+            <option value="beleza_saude">beleza_saude (美妆健康)</option>
+            <option value="utilidades_domesticas">utilidades_domesticas (家居日用)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>预估售价 (R$)</label>
+          <input type="number" id="newProdPrice" class="form-control" value="99.90" step="0.1">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>重量 (g)</label>
+            <input type="number" id="newProdWeight" class="form-control" value="500">
+          </div>
+          <div class="form-group">
+            <label>照片数量</label>
+            <input type="number" id="newProdPhotos" class="form-control" value="2">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeAddProductModal()">取消</button>
+        <button class="btn btn-primary" onclick="submitCreateProduct()">确认提交新增</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗 2：编辑商品弹窗表单 -->
+  <div class="modal-overlay" id="editProductModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span>✏️ 编辑商品属性 (Update Product)</span>
+        <span style="cursor: pointer;" onclick="closeEditProductModal()">✕</span>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editProdId">
+        <div class="form-group">
+          <label>商品编号</label>
+          <input type="text" id="editProdIdDisplay" class="form-control" disabled>
+        </div>
+        <div class="form-group">
+          <label>所属类目</label>
+          <input type="text" id="editProdCategory" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>商品均价 (R$)</label>
+          <input type="number" id="editProdPrice" class="form-control" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>重量 (g)</label>
+          <input type="number" id="editProdWeight" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeEditProductModal()">取消</button>
+        <button class="btn btn-primary" onclick="submitUpdateProduct()">保存更新</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗 3：API Key 配置 -->
+  <div class="modal-overlay" id="apiKeyModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span>🔑 配置大模型 API Key (BYOK)</span>
+        <span style="cursor: pointer;" onclick="closeKeyModal()">✕</span>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">
+          系统支持兼容 OpenAI 协议的模型（如 DeepSeek 等）。Key 仅保存在你的浏览器本地，用于即席问数。
+        </p>
+        <input type="password" id="userKeyInput" class="form-control" style="width: 100%;" placeholder="sk-...">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeKeyModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveKey()">保存 Key</button>
       </div>
     </div>
   </div>
 
   <script>
     let curProdPage = 1, curOrderPage = 1;
-    let chartIndex = 0;
+    let chartCounter = 0;
 
-    // 视图切换
-    function switchView(viewName) {
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
-
+    // 页面路由与菜单切换
+    function switchPage(pageId, p1, p2) {
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
       event.currentTarget.classList.add('active');
-      document.getElementById('view-' + viewName).classList.add('active');
 
-      const titles = {
-        'products': '📦 商品管理',
-        'orders': '📋 订单中心',
-        'metrics': '🏷️ 数仓指标字典',
-        'copilot-view': '🤖 AI 智能问数中心'
-      };
-      document.getElementById('pageTitle').innerText = titles[viewName] || '中台管理';
+      document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + pageId).classList.add('active');
 
-      if (viewName === 'products') loadProducts(1);
-      if (viewName === 'orders') loadOrders(1);
-      if (viewName === 'metrics') loadMetrics();
+      document.getElementById('breadcrumb').innerHTML = `<span>${p1}</span> / <span class="current">${p2}</span>`;
+
+      if (pageId === 'dashboard') initDashboard();
+      if (pageId === 'products') { loadProdCategories(); loadProducts(1); }
+      if (pageId === 'orders') loadOrders(1);
+      if (pageId === 'metrics') loadMetrics();
+      if (pageId === 'users') loadUsers();
+      if (pageId === 'logs') loadLogs();
     }
 
-    // 加载品类列表与商品
-    async function loadCategories() {
+    // 初始化控制台仪表盘图表
+    async function initDashboard() {
+      try {
+        const res = await fetch('/api/dashboard/stats');
+        const json = await res.json();
+        const d = json.data;
+        if (!d) return;
+
+        document.getElementById('kpiProducts').innerText = Number(d.totalProducts).toLocaleString();
+        document.getElementById('kpiOrders').innerText = Number(d.totalOrders).toLocaleString();
+        document.getElementById('kpiGmv').innerText = 'R$ ' + Number(d.totalGmv).toLocaleString();
+        document.getElementById('kpiAi').innerText = Number(d.aiQueryCount).toLocaleString();
+
+        // 渲染走势折线图
+        const trendEl = document.getElementById('dashboardTrendChart');
+        const trendChart = echarts.init(trendEl);
+        trendChart.setOption({
+          tooltip: { trigger: 'axis' },
+          grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+          xAxis: { type: 'category', boundaryGap: false, data: d.monthlyTrend.months },
+          yAxis: { type: 'value' },
+          series: [{
+            name: '销售额 (R$)',
+            type: 'line',
+            smooth: true,
+            data: d.monthlyTrend.sales,
+            areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(24,144,255,0.4)' }, { offset: 1, color: 'rgba(24,144,255,0.02)' }]) },
+            itemStyle: { color: '#1890ff' }
+          }]
+        });
+
+        // 渲染品类环形饼图
+        const pieEl = document.getElementById('dashboardPieChart');
+        const pieChart = echarts.init(pieEl);
+        pieChart.setOption({
+          tooltip: { trigger: 'item' },
+          legend: { bottom: '0', left: 'center', textStyle: { fontSize: 11 } },
+          series: [{
+            name: '销量占比',
+            type: 'pie',
+            radius: ['45%', '70%'],
+            avoidLabelOverlap: false,
+            label: { show: false },
+            data: d.categoryDistribution
+          }]
+        });
+      } catch (e) { console.error('Dashboard init error:', e); }
+    }
+
+    // ================= 商品 CRUD 业务 =================
+    async function loadProdCategories() {
       try {
         const res = await fetch('/api/products/categories');
         const json = await res.json();
         if (json.data) {
-          const select = document.getElementById('prodCategorySelect');
+          const sel = document.getElementById('prodCategoryFilter');
+          sel.innerHTML = '<option value="">全部商品类目</option>';
           json.data.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c; opt.innerText = c;
-            select.appendChild(opt);
+            sel.appendChild(opt);
           });
         }
       } catch (e) { console.error(e); }
@@ -407,10 +760,10 @@
 
     async function loadProducts(page) {
       curProdPage = page;
-      const cat = document.getElementById('prodCategorySelect').value;
-      const kw = document.getElementById('prodKeyword').value;
+      const cat = document.getElementById('prodCategoryFilter').value;
+      const kw = document.getElementById('prodKeywordInput').value;
       const tbody = document.getElementById('prodTableBody');
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">正在加载数据...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">正在加载...</td></tr>';
 
       try {
         const res = await fetch(`/api/products?category=${encodeURIComponent(cat)}&keyword=${encodeURIComponent(kw)}&page=${page}&pageSize=10`);
@@ -418,39 +771,129 @@
         const data = json.data;
         if (!data || !data.list || data.list.length === 0) {
           tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">暂无匹配商品</td></tr>';
-          document.getElementById('prodPageInfo').innerText = '0 / 0 页';
+          document.getElementById('prodPageSummary').innerText = '共 0 条';
           return;
         }
 
         tbody.innerHTML = data.list.map(p => `
           <tr>
-            <td style="font-family: monospace; font-size: 11px;">${p.productId.substring(0, 16)}...</td>
-            <td><span class="tag tag-blue">${p.productCategoryName || '未分类'}</span></td>
+            <td style="font-family: monospace; font-size: 12px; font-weight: 600;">${p.productId.substring(0, 16)}...</td>
+            <td><span class="status-tag status-processing">${p.productCategoryName || '未分类'}</span></td>
             <td>${p.productPhotosQty || 0}</td>
             <td>${p.productWeightG ? p.productWeightG + ' g' : '-'}</td>
-            <td>${p.productLengthCm || 0} × ${p.productWidthCm || 0} × ${p.productHeightCm || 0}</td>
+            <td>${p.productLengthCm || 0} × ${p.productWidthCm || 0} × ${p.productHeightCm || 0} cm</td>
             <td style="font-weight: 600; color: #16a34a;">${p.price ? 'R$ ' + p.price : 'R$ 89.90'}</td>
             <td>
-              <button class="btn btn-outline" style="padding: 2px 6px; font-size: 11px;" onclick="alert('商品ID: ' + '${p.productId}')">详情</button>
+              <button class="btn btn-default btn-sm" onclick='openEditProductModal(${JSON.stringify(p)})'>编辑</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.productId}')">删除</button>
             </td>
           </tr>
         `).join('');
 
-        document.getElementById('prodPageInfo').innerText = `第 ${data.page} / ${data.totalPages} 页 (共 ${data.total} 件)`;
-        document.getElementById('prodPrevBtn').disabled = data.page <= 1;
-        document.getElementById('prodNextBtn').disabled = data.page >= data.totalPages;
+        document.getElementById('prodPageSummary').innerText = `第 ${data.page} / ${data.totalPages} 页 (共 ${data.total} 条)`;
+        document.getElementById('prodCurrentPageNum').innerText = data.page;
+        document.getElementById('btnProdPrev').disabled = data.page <= 1;
+        document.getElementById('btnProdNext').disabled = data.page >= data.totalPages;
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #ef4444;">加载失败: ${e.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: red;">加载失败: ${e.message}</td></tr>`;
       }
     }
 
     function changeProdPage(delta) { loadProducts(curProdPage + delta); }
+    function resetProdFilter() {
+      document.getElementById('prodCategoryFilter').value = '';
+      document.getElementById('prodKeywordInput').value = '';
+      loadProducts(1);
+    }
 
-    // 加载订单
+    // 新增商品表单
+    function openAddProductModal() { document.getElementById('addProductModal').classList.add('active'); }
+    function closeAddProductModal() { document.getElementById('addProductModal').classList.remove('active'); }
+
+    async function submitCreateProduct() {
+      const prodId = document.getElementById('newProdId').value.trim();
+      const cat = document.getElementById('newProdCategory').value;
+      const price = document.getElementById('newProdPrice').value;
+      const weight = document.getElementById('newProdWeight').value;
+      const photos = document.getElementById('newProdPhotos').value;
+
+      try {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: prodId,
+            productCategoryName: cat,
+            price: Number(price) || 99.90,
+            productWeightG: Number(weight) || 500,
+            productPhotosQty: Number(photos) || 1
+          })
+        });
+        const json = await res.json();
+        if (json.code === 200) {
+          alert('商品新增成功！');
+          closeAddProductModal();
+          loadProducts(1);
+        } else {
+          alert('新增失败: ' + json.message);
+        }
+      } catch (e) { alert('提交异常: ' + e.message); }
+    }
+
+    // 编辑商品表单
+    function openEditProductModal(p) {
+      document.getElementById('editProdId').value = p.productId;
+      document.getElementById('editProdIdDisplay').value = p.productId;
+      document.getElementById('editProdCategory').value = p.productCategoryName || '';
+      document.getElementById('editProdPrice').value = p.price || 99.90;
+      document.getElementById('editProdWeight').value = p.productWeightG || 500;
+      document.getElementById('editProductModal').classList.add('active');
+    }
+    function closeEditProductModal() { document.getElementById('editProductModal').classList.remove('active'); }
+
+    async function submitUpdateProduct() {
+      const prodId = document.getElementById('editProdId').value;
+      const cat = document.getElementById('editProdCategory').value;
+      const price = document.getElementById('editProdPrice').value;
+      const weight = document.getElementById('editProdWeight').value;
+
+      try {
+        const res = await fetch(`/api/products/${prodId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productCategoryName: cat,
+            price: Number(price) || 99.90,
+            productWeightG: Number(weight) || 500
+          })
+        });
+        const json = await res.json();
+        if (json.code === 200) {
+          alert('商品属性更新成功！');
+          closeEditProductModal();
+          loadProducts(curProdPage);
+        }
+      } catch (e) { alert('更新异常: ' + e.message); }
+    }
+
+    // 删除商品
+    async function deleteProduct(id) {
+      if (!confirm(`确认要从数据库中删除商品 [${id.substring(0, 12)}...] 吗？`)) return;
+      try {
+        const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (json.code === 200) {
+          alert('删除成功！');
+          loadProducts(curProdPage);
+        }
+      } catch (e) { alert('删除失败: ' + e.message); }
+    }
+
+    // ================= 订单业务 =================
     async function loadOrders(page) {
       curOrderPage = page;
-      const status = document.getElementById('orderStatusSelect').value;
-      const orderId = document.getElementById('orderIdSearch').value;
+      const status = document.getElementById('orderStatusFilter').value;
+      const orderId = document.getElementById('orderIdFilter').value;
       const tbody = document.getElementById('orderTableBody');
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">正在加载订单...</td></tr>';
 
@@ -459,190 +902,220 @@
         const json = await res.json();
         const data = json.data;
         if (!data || !data.list || data.list.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">暂无订单记录</td></tr>';
-          document.getElementById('orderPageInfo').innerText = '0 / 0 页';
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">暂无订单数据</td></tr>';
+          document.getElementById('orderPageSummary').innerText = '共 0 条';
           return;
         }
 
         tbody.innerHTML = data.list.map(o => `
           <tr>
-            <td style="font-family: monospace; font-size: 11px;">${o.orderId.substring(0, 16)}...</td>
-            <td style="font-family: monospace; font-size: 11px;">${o.customerId.substring(0, 12)}...</td>
-            <td><span class="tag ${o.orderStatus === 'delivered' ? 'tag-green' : 'tag-yellow'}">${o.orderStatus}</span></td>
-            <td>${o.itemCount}</td>
-            <td style="font-weight: 600;">R$ ${o.totalAmount || 0}</td>
+            <td style="font-family: monospace; font-size: 12px; font-weight: 600;">${o.orderId.substring(0, 16)}...</td>
+            <td style="font-family: monospace; font-size: 12px;">${o.customerId.substring(0, 12)}...</td>
+            <td>
+              <span class="status-tag ${o.orderStatus === 'delivered' ? 'status-success' : (o.orderStatus === 'canceled' ? 'status-danger' : 'status-warning')}">
+                ${o.orderStatus}
+              </span>
+            </td>
+            <td>${o.itemCount} 件</td>
+            <td style="font-weight: 600; color: #1f2937;">R$ ${o.totalAmount || 0}</td>
             <td>${o.purchaseTimestamp ? o.purchaseTimestamp.replace('T', ' ').substring(0, 16) : '-'}</td>
-            <td>${o.deliveredCustomerDate ? o.deliveredCustomerDate.replace('T', ' ').substring(0, 16) : '-'}</td>
+            <td>
+              <button class="btn btn-default btn-sm" onclick="changeOrderStatus('${o.orderId}')">流转状态</button>
+            </td>
           </tr>
         `).join('');
 
-        document.getElementById('orderPageInfo').innerText = `第 ${data.page} / ${data.totalPages} 页 (共 ${data.total} 笔)`;
-        document.getElementById('orderPrevBtn').disabled = data.page <= 1;
-        document.getElementById('orderNextBtn').disabled = data.page >= data.totalPages;
+        document.getElementById('orderPageSummary').innerText = `第 ${data.page} / ${data.totalPages} 页 (共 ${data.total} 条)`;
+        document.getElementById('orderCurrentPageNum').innerText = data.page;
+        document.getElementById('btnOrderPrev').disabled = data.page <= 1;
+        document.getElementById('btnOrderNext').disabled = data.page >= data.totalPages;
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #ef4444;">订单加载失败: ${e.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: red;">加载失败: ${e.message}</td></tr>`;
       }
     }
 
     function changeOrderPage(delta) { loadOrders(curOrderPage + delta); }
 
-    // 加载指标字典
+    async function changeOrderStatus(id) {
+      const nextStatus = prompt(`请输入订单 [${id.substring(0, 12)}...] 的新状态：\n可选：delivered (已送达) / shipped (已发货) / canceled (已取消)`, 'delivered');
+      if (!nextStatus) return;
+      try {
+        const res = await fetch(`/api/orders/${id}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: nextStatus.trim() })
+        });
+        const json = await res.json();
+        if (json.code === 200) {
+          alert('订单状态流转成功！');
+          loadOrders(curOrderPage);
+        }
+      } catch (e) { alert('更新异常: ' + e.message); }
+    }
+
+    // ================= 数仓指标字典 =================
     async function loadMetrics() {
-      const tbody = document.getElementById('metricTableBody');
+      const tbody = document.getElementById('metricsTableBody');
       try {
         const res = await fetch('/api/metrics');
         const json = await res.json();
-        if (json.data && json.data.length > 0) {
+        if (json.data) {
           tbody.innerHTML = json.data.map(m => `
             <tr>
-              <td style="font-family: monospace; font-weight: 600; color: var(--primary);">${m.id}</td>
+              <td style="font-family: monospace; font-weight: 600; color: #1890ff;">${m.id}</td>
               <td><b>${m.name}</b></td>
               <td>${m.description || m.formula || '-'}</td>
-              <td>${(m.tables || []).map(t => `<span class="tag tag-blue">${t}</span>`).join(' ')}</td>
+              <td>${(m.tables || []).map(t => `<span class="status-tag status-processing">${t}</span>`).join(' ')}</td>
             </tr>
           `).join('');
         }
-      } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="4">加载指标异常: ${e.message}</td></tr>`;
-      }
+      } catch (e) { tbody.innerHTML = `<tr><td colspan="4">加载指标失败: ${e.message}</td></tr>`; }
     }
 
-    // Copilot 侧边抽屉开关
-    function toggleDrawer() {
-      const overlay = document.getElementById('drawerOverlay');
-      const panel = document.getElementById('drawerPanel');
-      overlay.classList.toggle('active');
-      panel.classList.toggle('active');
+    // ================= 系统用户管理 =================
+    async function loadUsers() {
+      const tbody = document.getElementById('userTableBody');
+      try {
+        const res = await fetch('/api/system/users');
+        const json = await res.json();
+        if (json.data) {
+          tbody.innerHTML = json.data.map(u => `
+            <tr>
+              <td>${u.id}</td>
+              <td style="font-weight: 600;">${u.username}</td>
+              <td>${u.nickname}</td>
+              <td><span class="role-tag">${u.role}</span></td>
+              <td>${u.department}</td>
+              <td><span class="status-tag ${u.status === 'NORMAL' ? 'status-success' : 'status-danger'}">${u.status === 'NORMAL' ? '正常' : '已禁用'}</span></td>
+              <td>
+                <button class="btn btn-default btn-sm" onclick="alert('用户已重置密码')">重置密码</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) { console.error(e); }
     }
 
-    // API Key 弹窗
-    function openKeyModal() {
-      document.getElementById('userApiKeyInput').value = localStorage.getItem('AGENT_API_KEY') || '';
-      document.getElementById('keyModal').classList.add('active');
-    }
-    function closeKeyModal() { document.getElementById('keyModal').classList.remove('active'); }
-    function saveApiKey() {
-      const key = document.getElementById('userApiKeyInput').value.trim();
-      localStorage.setItem('AGENT_API_KEY', key);
-      closeKeyModal();
-      alert('API Key 保存成功！');
+    // ================= 操作审计日志 =================
+    async function loadLogs() {
+      const tbody = document.getElementById('logTableBody');
+      try {
+        const res = await fetch('/api/system/logs');
+        const json = await res.json();
+        if (json.data) {
+          tbody.innerHTML = json.data.map(l => `
+            <tr>
+              <td>#${l.id}</td>
+              <td><b>${l.operator}</b></td>
+              <td><span class="status-tag status-processing">${l.action}</span></td>
+              <td style="font-family: monospace; font-size: 12px;">${l.detail}</td>
+              <td>${l.ip}</td>
+              <td><span class="status-tag ${l.status === 'SUCCESS' ? 'status-success' : 'status-danger'}">${l.status}</span></td>
+              <td>${l.time}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) { console.error(e); }
     }
 
-    // 智能问数提问
-    async function quickAsk(q) {
-      document.getElementById('mainQuestionInput').value = q;
-      submitAsk('main');
+    // ================= AI 问数模块 (Text2SQL Agent) =================
+    function askAiQuery(q) {
+      document.getElementById('aiQuestionInput').value = q;
+      submitMainAiQuery();
     }
 
-    async function submitAsk(target) {
-      const input = document.getElementById(target === 'main' ? 'mainQuestionInput' : 'drawerQuestionInput');
-      const question = input.value.trim();
-      if (!question) return;
+    async function submitMainAiQuery() {
+      const input = document.getElementById('aiQuestionInput');
+      const q = input.value.trim();
+      if (!q) return;
 
-      const container = document.getElementById(target === 'main' ? 'mainChatBody' : 'drawerChatBody');
+      const chatArea = document.getElementById('aiChatArea');
       input.value = '';
 
-      // 添加用户气泡
-      container.innerHTML += `
-        <div class="msg-row msg-user">
-          <div class="bubble-user">${question}</div>
-        </div>
-      `;
+      // 用户问题气泡
+      chatArea.innerHTML += `<div class="chat-bubble-user">${q}</div>`;
 
-      // 临时加载状态
-      const loadId = 'loading-' + Date.now();
-      container.innerHTML += `
-        <div class="msg-row" id="${loadId}">
-          <div class="bubble-agent">
-            <span>⏳ AI 智能体正在解析 Schema、安全校验并生成执行...</span>
-          </div>
-        </div>
-      `;
-      container.scrollTop = container.scrollHeight;
+      // AI 加载占位
+      const loadId = 'load-' + Date.now();
+      chatArea.innerHTML += `<div class="chat-bubble-ai" id="${loadId}">⏳ 正在加载 Schema 拓扑图、注入业务指标口径并执行 AST 安全沙箱校验...</div>`;
+      chatArea.scrollTop = chatArea.scrollHeight;
 
       try {
-        const apiKey = localStorage.getItem('AGENT_API_KEY') || '';
+        const key = localStorage.getItem('AGENT_API_KEY') || '';
         const res = await fetch('/api/ask', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
-          body: JSON.stringify({ question: question, apiKey: apiKey })
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': key },
+          body: JSON.stringify({ question: q, apiKey: key })
         });
         const data = await res.json();
         document.getElementById(loadId)?.remove();
 
-        renderAgentResponse(container, data);
+        renderAiResult(chatArea, data);
       } catch (e) {
         document.getElementById(loadId)?.remove();
-        container.innerHTML += `
-          <div class="msg-row">
-            <div class="bubble-agent" style="border-left: 4px solid #ef4444;">
-              <b style="color: #ef4444;">请求异常</b>: ${e.message}
-            </div>
-          </div>
-        `;
+        chatArea.innerHTML += `<div class="chat-bubble-ai" style="border-left: 4px solid #ff4d4f;"><b style="color: #ff4d4f;">请求失败:</b> ${e.message}</div>`;
       }
-      container.scrollTop = container.scrollHeight;
+      chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    function renderAgentResponse(container, resp) {
-      chartIndex++;
-      const cId = 'chart-' + chartIndex;
+    function renderAiResult(container, resp) {
+      chartCounter++;
+      const chartId = 'aiChart-' + chartCounter;
       const isOk = resp.status === 'SUCCESS';
       const sql = resp.sql || '';
       const rows = resp.data || [];
       const columns = resp.columns || (rows.length > 0 ? Object.keys(rows[0]) : []);
 
-      let html = `<div class="msg-row"><div class="bubble-agent">`;
+      let html = `<div class="chat-bubble-ai">`;
 
       if (!isOk) {
         html += `
-          <div style="color: #ef4444; font-weight: 600; margin-bottom: 8px;">
-            ⚠️ 请求被拦截或执行未完成 [${resp.status}]
+          <div style="color: #ff4d4f; font-weight: 600; margin-bottom: 6px;">
+            ⚠️ 语句被安全护栏拦截或未完成执行 [${resp.status}]
           </div>
-          <div style="font-size: 13px; color: #475569;">${resp.message || 'SQL 未通过校验或缺少必要模型配置'}</div>
+          <div style="font-size: 13px; color: #595959;">${resp.message || 'SQL 未通过校验或缺少必要模型配置'}</div>
         `;
       } else {
         html += `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span class="tag tag-green">✓ 查询成功 (耗时: ${resp.latencyMs || 0}ms)</span>
-            <div class="view-toggle-bar">
-              <button class="btn btn-outline" style="padding: 2px 8px; font-size: 11px;" onclick="toggleChart('${cId}', false)">表格视图</button>
-              <button class="btn btn-primary" style="padding: 2px 8px; font-size: 11px;" onclick="toggleChart('${cId}', true)">📊 图表视图</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span class="status-tag status-success">✓ 查数完成 (耗时: ${resp.latencyMs || 0}ms)</span>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-default btn-sm" onclick="toggleAiView('${chartId}', false)">表格视图</button>
+              <button class="btn btn-primary btn-sm" onclick="toggleAiView('${chartId}', true)">📊 ECharts 图表视图</button>
             </div>
           </div>
         `;
       }
 
       if (sql) {
-        html += `<div class="sql-box"><b>-- 生成的标准只读 SQL:</b>\n${sql}</div>`;
+        html += `<div class="sql-code-block"><b>-- 生成的只读 SQL:</b>\n${sql}</div>`;
       }
 
       if (rows && rows.length > 0) {
         html += `
-          <div id="table-wrap-${cId}" style="overflow-x: auto; margin-top: 10px;">
-            <table class="data-table">
+          <div id="table-wrap-${chartId}" style="overflow-x: auto; margin-top: 8px;">
+            <table class="table-admin">
               <thead><tr>${columns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
               <tbody>
                 ${rows.map(r => `<tr>${columns.map(c => `<td>${r[c] !== null ? r[c] : ''}</td>`).join('')}</tr>`).join('')}
               </tbody>
             </table>
           </div>
-          <div id="${cId}" class="chart-container" style="display: none;"></div>
+          <div id="${chartId}" style="height: 300px; width: 100%; display: none; margin-top: 10px;"></div>
         `;
       }
 
-      html += `</div></div>`;
+      html += `</div>`;
       container.innerHTML += html;
 
-      // 如果有数据且包含数值列，延迟初始化 ECharts
       if (rows && rows.length > 0) {
-        setTimeout(() => initEChart(cId, columns, rows), 50);
+        setTimeout(() => initAiChart(chartId, columns, rows), 50);
       }
     }
 
-    function toggleChart(cId, showChart) {
-      const chartEl = document.getElementById(cId);
-      const tableEl = document.getElementById('table-wrap-' + cId);
+    function toggleAiView(chartId, showChart) {
+      const chartEl = document.getElementById(chartId);
+      const tableEl = document.getElementById('table-wrap-' + chartId);
       if (showChart) {
         chartEl.style.display = 'block';
         tableEl.style.display = 'none';
@@ -653,37 +1126,82 @@
       }
     }
 
-    function initEChart(cId, columns, rows) {
-      const chartEl = document.getElementById(cId);
+    function initAiChart(chartId, columns, rows) {
+      const chartEl = document.getElementById(chartId);
       if (!chartEl) return;
       const myChart = echarts.init(chartEl);
 
       const xCol = columns[0];
       const yCol = columns[1] || columns[0];
-
       const xData = rows.map(r => r[xCol]);
       const yData = rows.map(r => Number(r[yCol]) || 0);
 
-      const option = {
-        title: { text: '查询结果自动可视化分析', left: 'center', textStyle: { fontSize: 13 } },
+      myChart.setOption({
+        title: { text: '查询统计自动可视化', left: 'center', textStyle: { fontSize: 13 } },
         tooltip: { trigger: 'axis' },
         grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
-        xAxis: { type: 'category', data: xData, axisLabel: { interval: 0, rotate: 25, fontSize: 11 } },
+        xAxis: { type: 'category', data: xData, axisLabel: { interval: 0, rotate: 20, fontSize: 11 } },
         yAxis: { type: 'value' },
         series: [{
           name: yCol,
           type: 'bar',
           data: yData,
-          itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] }
+          itemStyle: { color: '#1890ff', borderRadius: [4, 4, 0, 0] }
         }]
-      };
-      myChart.setOption(option);
+      });
     }
 
-    // 页面初始化
+    // ================= 悬浮 Copilot 抽屉 =================
+    function toggleCopilotDrawer() {
+      document.getElementById('copilotDrawer').classList.toggle('active');
+    }
+
+    async function submitDrawerAiQuery() {
+      const input = document.getElementById('drawerInput');
+      const q = input.value.trim();
+      if (!q) return;
+
+      const area = document.getElementById('drawerChatArea');
+      input.value = '';
+      area.innerHTML += `<div class="chat-bubble-user">${q}</div>`;
+
+      const loadId = 'drawerLoad-' + Date.now();
+      area.innerHTML += `<div class="chat-bubble-ai" id="${loadId}">⏳ 正在分析数仓...</div>`;
+      area.scrollTop = area.scrollHeight;
+
+      try {
+        const key = localStorage.getItem('AGENT_API_KEY') || '';
+        const res = await fetch('/api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': key },
+          body: JSON.stringify({ question: q, apiKey: key })
+        });
+        const data = await res.json();
+        document.getElementById(loadId)?.remove();
+        renderAiResult(area, data);
+      } catch (e) {
+        document.getElementById(loadId)?.remove();
+        area.innerHTML += `<div class="chat-bubble-ai" style="color: red;">提问失败: ${e.message}</div>`;
+      }
+      area.scrollTop = area.scrollHeight;
+    }
+
+    // ================= API Key 弹窗 =================
+    function openKeyModal() {
+      document.getElementById('userKeyInput').value = localStorage.getItem('AGENT_API_KEY') || '';
+      document.getElementById('apiKeyModal').classList.add('active');
+    }
+    function closeKeyModal() { document.getElementById('apiKeyModal').classList.remove('active'); }
+    function saveKey() {
+      const k = document.getElementById('userKeyInput').value.trim();
+      localStorage.setItem('AGENT_API_KEY', k);
+      closeKeyModal();
+      alert('大模型 Key 保存成功！');
+    }
+
+    // 默认加载首页仪表盘
     window.addEventListener('DOMContentLoaded', () => {
-      loadCategories();
-      loadProducts(1);
+      initDashboard();
     });
   </script>
 </body>
