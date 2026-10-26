@@ -503,8 +503,8 @@
           </div>
 
           <!-- 对话流展示区域 -->
-          <div id="aiChatArea" style="min-height: 280px; max-height: 480px; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; gap: 14px;">
-            <div style="text-align: center; color: var(--text-muted); font-size: 13px; margin: 40px 0;">
+          <div id="aiChatArea" style="min-height: 280px; max-height: 520px; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; gap: 14px;">
+            <div id="aiWelcomeMsg" style="text-align: center; color: var(--text-muted); font-size: 13px; margin: 40px 0;">
               输入自然语言业务问题，AI 将自动检索 37 张数仓表、执行 AST 安全白名单校验并渲染数据表格与统计图表。
             </div>
           </div>
@@ -1068,12 +1068,15 @@
       const chatArea = document.getElementById('aiChatArea');
       input.value = '';
 
-      // 用户问题气泡
-      chatArea.innerHTML += `<div class="chat-bubble-user">${q}</div>`;
+      // 首次提问移除占位提示语
+      document.getElementById('aiWelcomeMsg')?.remove();
+
+      // 用户问题气泡（使用 insertAdjacentHTML 保证既有 Canvas 和图表不受重绘影响）
+      chatArea.insertAdjacentHTML('beforeend', `<div class="chat-bubble-user">${q}</div>`);
 
       // AI 加载占位
       const loadId = 'load-' + Date.now();
-      chatArea.innerHTML += `<div class="chat-bubble-ai" id="${loadId}">⏳ 正在加载 Schema 拓扑图、注入业务指标口径并执行 AST 安全沙箱校验...</div>`;
+      chatArea.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" id="${loadId}">⏳ 正在检索数仓拓扑与业务指标口径...</div>`);
       chatArea.scrollTop = chatArea.scrollHeight;
 
       try {
@@ -1089,7 +1092,7 @@
         renderAiResult(chatArea, data);
       } catch (e) {
         document.getElementById(loadId)?.remove();
-        chatArea.innerHTML += `<div class="chat-bubble-ai" style="border-left: 4px solid #ff4d4f;"><b style="color: #ff4d4f;">请求失败:</b> ${e.message}</div>`;
+        chatArea.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" style="border-left: 4px solid #ff4d4f;"><b style="color: #ff4d4f;">请求失败:</b> ${e.message}</div>`);
       }
       chatArea.scrollTop = chatArea.scrollHeight;
     }
@@ -1143,7 +1146,7 @@
       }
 
       html += `</div>`;
-      container.innerHTML += html;
+      container.insertAdjacentHTML('beforeend', html);
 
       if (rows && rows.length > 0) {
         aiChartRegistry[chartId] = { columns, rows };
@@ -1275,10 +1278,10 @@
 
       const area = document.getElementById('drawerChatArea');
       input.value = '';
-      area.innerHTML += `<div class="chat-bubble-user">${q}</div>`;
+      area.insertAdjacentHTML('beforeend', `<div class="chat-bubble-user">${q}</div>`);
 
       const loadId = 'drawerLoad-' + Date.now();
-      area.innerHTML += `<div class="chat-bubble-ai" id="${loadId}">⏳ 正在分析数仓...</div>`;
+      area.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" id="${loadId}">⏳ 正在分析数仓...</div>`);
       area.scrollTop = area.scrollHeight;
 
       try {
@@ -1293,7 +1296,7 @@
         renderAiResult(area, data);
       } catch (e) {
         document.getElementById(loadId)?.remove();
-        area.innerHTML += `<div class="chat-bubble-ai" style="color: red;">提问失败: ${e.message}</div>`;
+        area.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" style="color: red;">提问失败: ${e.message}</div>`);
       }
       area.scrollTop = area.scrollHeight;
     }
