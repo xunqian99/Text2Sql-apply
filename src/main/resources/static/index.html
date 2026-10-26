@@ -215,6 +215,42 @@
       align-self: flex-start; background: #fff; border: 1px solid #e8e8e8; padding: 14px; border-radius: 16px 16px 16px 2px;
       font-size: 13px; max-width: 100%; width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
+
+    /* 视图切换连体分段按钮组 */
+    .view-segmented-group {
+      display: inline-flex;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .view-segmented-btn {
+      border: none;
+      background: #ffffff;
+      padding: 4px 13px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #595959;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      outline: none;
+      border-right: 1px solid #d9d9d9;
+    }
+    .view-segmented-btn:last-child {
+      border-right: none;
+    }
+    .view-segmented-btn:hover {
+      color: #1890ff;
+      background: #f5faff;
+    }
+    .view-segmented-btn.active {
+      background: #e6f7ff;
+      color: #1890ff;
+      font-weight: 600;
+    }
     .sql-code-block {
       background: #1e1e1e; color: #f8fafc; border-radius: 6px; padding: 10px 14px; font-family: monospace;
       font-size: 12px; line-height: 1.5; margin: 8px 0; overflow-x: auto;
@@ -1120,9 +1156,9 @@
         html += `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span class="status-tag status-success">✓ 查数完成 (耗时: ${ms}ms)</span>
-            <div style="display: flex; gap: 6px;">
-              <button class="btn btn-default btn-sm" onclick="toggleAiView('${chartId}', false)">表格视图</button>
-              <button class="btn btn-primary btn-sm" onclick="toggleAiView('${chartId}', true)">📊 ECharts 图表视图</button>
+            <div class="view-segmented-group" id="btn-group-${chartId}">
+              <button class="view-segmented-btn active" id="btn-table-${chartId}" onclick="toggleAiView('${chartId}', false)">表格视图</button>
+              <button class="view-segmented-btn" id="btn-chart-${chartId}" onclick="toggleAiView('${chartId}', true)">📊 ECharts 图表视图</button>
             </div>
           </div>
         `;
@@ -1158,17 +1194,24 @@
     function toggleAiView(chartId, showChart) {
       const chartEl = document.getElementById(chartId);
       const tableEl = document.getElementById('table-wrap-' + chartId);
+      const btnTable = document.getElementById('btn-table-' + chartId);
+      const btnChart = document.getElementById('btn-chart-' + chartId);
+
       if (showChart) {
-        chartEl.style.display = 'block';
-        tableEl.style.display = 'none';
+        if (chartEl) chartEl.style.display = 'block';
+        if (tableEl) tableEl.style.display = 'none';
+        if (btnTable) btnTable.classList.remove('active');
+        if (btnChart) btnChart.classList.add('active');
 
         const cfg = aiChartRegistry[chartId];
         if (cfg) {
           initAiChart(chartId, cfg.columns, cfg.rows);
         }
       } else {
-        chartEl.style.display = 'none';
-        tableEl.style.display = 'block';
+        if (chartEl) chartEl.style.display = 'none';
+        if (tableEl) tableEl.style.display = 'block';
+        if (btnTable) btnTable.classList.add('active');
+        if (btnChart) btnChart.classList.remove('active');
       }
     }
 
