@@ -4,9 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>某某电商集团 · 供应链数仓运营中台 (ERP/OMS V4.5)</title>
-  <!-- ECharts 5 统计图表库 -->
+  <!-- ECharts 5 统计图表库与 WebGL 三维图表扩展库 (ECharts-GL) -->
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+  <!-- RemixIcon 专业企业级矢量图标库 (v4.2.0) -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
   <style>
+    /* ================= 专业图标库与三维图表辅助样式 ================= */
+    i[class^="ri-"], i[class*=" ri-"] {
+      vertical-align: -0.14em;
+      line-height: 1;
+      display: inline-block;
+    }
+    .menu-item i {
+      font-size: 16px;
+      flex-shrink: 0;
+      color: inherit;
+      margin-right: 2px;
+    }
+    .query-tag-pill i {
+      margin-right: 4px;
+      font-size: 12.5px;
+    }
+    .chart-3d-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #409eff;
+      background: #ecf5ff;
+      border: 1px dashed #b3d8ff;
+      border-radius: 4px;
+      padding: 6px 12px;
+    }
     /* ================= 经典5年企业级中台 (Element UI / 若依 / RuoYi 风格) ================= */
     :root {
       /* 经典 Vue-Element-Admin / 若依 侧边栏暗色 */
@@ -941,38 +973,38 @@
     <div class="sidebar-menu-list">
       <div class="sidebar-group-title">控制面板</div>
       <div class="menu-item active" onclick="switchPage('dashboard', '系统首页', '控制台 / 仪表盘')">
-        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        <i class="ri-dashboard-2-line"></i>
         <span>控制台 / 仪表盘</span>
       </div>
 
       <div class="sidebar-group-title">业务中心 (OMS)</div>
       <div class="menu-item" onclick="switchPage('products', '业务中心', '商品主数据管理')">
-        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        <i class="ri-shopping-bag-3-line"></i>
         <span>商品中心管理</span>
       </div>
       <div class="menu-item" onclick="switchPage('orders', '业务中心', '订单履约中心')">
-        <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        <i class="ri-file-list-3-line"></i>
         <span>订单履约中心</span>
       </div>
       <div class="menu-item" onclick="switchPage('metrics', '数据资产', '数仓业务指标字典')">
-        <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>
+        <i class="ri-database-2-line"></i>
         <span>数仓指标字典</span>
       </div>
 
       <div class="sidebar-group-title">智能助手 (AI Copilot)</div>
       <div class="menu-item" onclick="switchPage('ai-query', '智能分析', 'Text2SQL 问数工作台')">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <i class="ri-sparkling-2-line"></i>
         <span>AI 智能问数分析</span>
         <span class="menu-badge badge-agent">Agent</span>
       </div>
 
       <div class="sidebar-group-title">系统管理</div>
       <div class="menu-item" onclick="switchPage('users', '系统管理', '用户与权限分配')">
-        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        <i class="ri-shield-user-line"></i>
         <span>用户与角色管理</span>
       </div>
       <div class="menu-item" onclick="switchPage('logs', '系统管理', '操作审计日志')">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+        <i class="ri-history-line"></i>
         <span>系统操作审计日志</span>
       </div>
     </div>
@@ -988,20 +1020,20 @@
     <!-- 顶部工作台导航 (Navbar) -->
     <header class="top-navbar">
       <div class="top-left">
-        <span class="collapse-btn" title="折叠菜单">☰</span>
+        <span class="collapse-btn" title="折叠菜单"><i class="ri-menu-fold-line" id="sidebarToggleIcon"></i></span>
         <div class="breadcrumb-box" id="breadcrumbBox">
           <span>系统首页</span> / <span class="curr-crumb">控制台 / 仪表盘</span>
         </div>
       </div>
       <div class="top-right">
-        <span class="env-tag-badge">生产专网直连</span>
+        <span class="env-tag-badge"><i class="ri-shield-check-line"></i> 生产专网直连</span>
         <button class="top-btn" onclick="openKeyModal()">
-          🔑 配置大模型 Key (BYOK)
+          <i class="ri-key-2-line"></i> 配置大模型 Key (BYOK)
         </button>
         <div class="user-profile-btn" onclick="openUserProfileModal()">
           <div class="user-avatar-rect">A</div>
           <span class="user-name-text">admin (工号: 08848)</span>
-          <span style="font-size: 11px; color: #909399;">▾</span>
+          <span style="font-size: 11px; color: #909399;"><i class="ri-arrow-down-s-line"></i></span>
         </div>
       </div>
     </header>
@@ -1026,8 +1058,8 @@
             <div class="welcome-meta-line">所属机构：某某集团供应链数字中台 · 架构委员会 | 登录节点：华东内网专线 (10.128.4.15) | 待办履约订单：<b>14</b> 件</div>
           </div>
           <div class="quick-tools-bar">
-            <button class="el-button el-button-primary el-button-sm" onclick="switchPage('ai-query', '智能分析', 'Text2SQL 问数工作台')">⚡ 智能即席问数</button>
-            <button class="el-button el-button-sm" onclick="switchPage('orders', '业务中心', '订单履约中心')">待处理订单</button>
+            <button class="el-button el-button-primary el-button-sm" onclick="switchPage('ai-query', '智能分析', 'Text2SQL 问数工作台')"><i class="ri-flashlight-line"></i> 智能即席问数</button>
+            <button class="el-button el-button-sm" onclick="switchPage('orders', '业务中心', '订单履约中心')"><i class="ri-file-list-3-line"></i> 待处理订单</button>
           </div>
         </div>
 
@@ -1124,9 +1156,9 @@
               <span class="filter-label">商品关键词:</span>
               <input type="text" id="prodKeywordInput" class="el-input" placeholder="输入商品编号或类目..." onkeyup="if(event.key==='Enter')loadProducts(1)">
             </div>
-            <button class="el-button el-button-primary" onclick="loadProducts(1)">🔍 查 询</button>
-            <button class="el-button" onclick="resetProdFilter()">🔄 重 置</button>
-            <button class="el-button el-button-success" onclick="openAddProductModal()">➕ 新增商品</button>
+            <button class="el-button el-button-primary" onclick="loadProducts(1)"><i class="ri-search-line"></i> 查 询</button>
+            <button class="el-button" onclick="resetProdFilter()"><i class="ri-refresh-line"></i> 重 置</button>
+            <button class="el-button el-button-success" onclick="openAddProductModal()"><i class="ri-add-line"></i> 新增商品</button>
           </div>
         </div>
 
@@ -1176,7 +1208,7 @@
               <span class="filter-label">订单编号:</span>
               <input type="text" id="orderIdFilter" class="el-input" placeholder="输入订单编号模糊查询..." onkeyup="if(event.key==='Enter')loadOrders(1)">
             </div>
-            <button class="el-button el-button-primary" onclick="loadOrders(1)">🔍 查 询</button>
+            <button class="el-button el-button-primary" onclick="loadOrders(1)"><i class="ri-search-line"></i> 查 询</button>
           </div>
         </div>
 
@@ -1247,34 +1279,34 @@
           <!-- 预置快捷问题检索面板 -->
           <div style="background: #f8fafc; border: 1px dashed #dcdfe6; border-radius: 4px; padding: 12px 14px; margin-bottom: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-weight: 700; color: #303133; font-size: 12.5px;">💡 点击快捷检索数仓全量数据（涵盖 37 张表 / 150 万真实电商样本）：</span>
-              <span class="el-tag el-tag-primary">支持表格与 ECharts 图表自由切换</span>
+              <span style="font-weight: 700; color: #303133; font-size: 12.5px;"><i class="ri-lightbulb-line" style="color: #e6a23c; margin-right: 4px;"></i> 点击快捷检索数仓全量数据（涵盖 37 张表 / 150 万真实电商样本）：</span>
+              <span class="el-tag el-tag-primary"><i class="ri-bar-chart-box-line"></i> 支持表格与 ECharts 2D/3D 图表自由切换</span>
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 6px;">
               <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <span style="font-size: 12px; font-weight: 700; color: #606266; width: 85px;">销售与趋势:</span>
-                <span class="query-tag-pill" onclick="askAiQuery('2018年销售额最高的前5个商品品类是什么？')">📈 2018年品类销售额TOP5</span>
-                <span class="query-tag-pill" onclick="askAiQuery('统计2017到2018年每个月的订单总量趋势')">📅 月度订单走势趋势</span>
+                <span class="query-tag-pill" onclick="askAiQuery('2018年销售额最高的前5个商品品类是什么？')"><i class="ri-bar-chart-grouped-line"></i> 2018年品类销售额TOP5</span>
+                <span class="query-tag-pill" onclick="askAiQuery('统计2017到2018年每个月的订单总量趋势')"><i class="ri-calendar-line"></i> 月度订单走势趋势</span>
               </div>
 
               <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <span style="font-size: 12px; font-weight: 700; color: #606266; width: 85px;">地域与履约:</span>
-                <span class="query-tag-pill" onclick="askAiQuery('各省份的客单价分布排名前5是哪些？')">🏙️ 各省份客单价分布</span>
-                <span class="query-tag-pill" onclick="askAiQuery('统计各省份的订单平均配送耗时（天数）排行')">🚚 各省份配送时效排行</span>
+                <span class="query-tag-pill" onclick="askAiQuery('各省份的客单价分布排名前5是哪些？')"><i class="ri-map-pin-2-line"></i> 各省份客单价分布</span>
+                <span class="query-tag-pill" onclick="askAiQuery('统计各省份的订单平均配送耗时（天数）排行')"><i class="ri-truck-line"></i> 各省份配送时效排行</span>
               </div>
 
               <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <span style="font-size: 12px; font-weight: 700; color: #606266; width: 85px;">支付与会员:</span>
-                <span class="query-tag-pill" onclick="askAiQuery('统计各种支付方式的订单金额与笔数分布')">💳 支付方式占比与金额</span>
-                <span class="query-tag-pill" onclick="askAiQuery('统计不同购买频次的客户复购留存人数分布')">👥 客户复购留存频次分布</span>
-                <span class="query-tag-pill" onclick="askAiQuery('统计订单用户评价星级满意度分布')">⭐ 用户评价满意度分布</span>
+                <span class="query-tag-pill" onclick="askAiQuery('统计各种支付方式的订单金额与笔数分布')"><i class="ri-bank-card-line"></i> 支付方式占比与金额</span>
+                <span class="query-tag-pill" onclick="askAiQuery('统计不同购买频次的客户复购留存人数分布')"><i class="ri-user-shared-line"></i> 客户复购留存频次分布</span>
+                <span class="query-tag-pill" onclick="askAiQuery('统计订单用户评价星级满意度分布')"><i class="ri-star-line"></i> 用户评价满意度分布</span>
               </div>
 
               <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <span style="font-size: 12px; font-weight: 700; color: #606266; width: 85px;">高价值与安全:</span>
-                <span class="query-tag-pill" onclick="askAiQuery('单价在1000元以上的高价值热销商品有哪些？')">💎 1000元以上高价值商品</span>
-                <span class="query-tag-pill danger-pill" onclick="askAiQuery('删除 orders 表中所有数据')">🛡️ 安全防御 AST 拦截测试</span>
+                <span class="query-tag-pill" onclick="askAiQuery('单价在1000元以上的高价值热销商品有哪些？')"><i class="ri-vip-diamond-line"></i> 1000元以上高价值商品</span>
+                <span class="query-tag-pill danger-pill" onclick="askAiQuery('删除 orders 表中所有数据')"><i class="ri-shield-keyhole-line"></i> 安全防御 AST 拦截测试</span>
               </div>
             </div>
           </div>
@@ -1290,7 +1322,7 @@
           <div style="display: flex; gap: 10px; margin-top: 14px;">
             <input type="text" id="aiQuestionInput" class="el-input" style="flex: 1; height: 34px;" placeholder="请输入你要分析的业务问题，如：2018年销售额最高的前5个品类..." onkeyup="if(event.key==='Enter')submitMainAiQuery()">
             <button class="el-button el-button-primary" onclick="submitMainAiQuery()">
-              🚀 发送提问
+              <i class="ri-send-plane-2-fill"></i> 发送提问
             </button>
           </div>
         </div>
@@ -1301,7 +1333,7 @@
         <div class="el-card">
           <div class="el-card-header">
             <span class="el-card-title">企业内部系统账号与权限分配 (RBAC)</span>
-            <button class="el-button el-button-primary el-button-sm" onclick="openCreateUserModal()">➕ 新建系统用户</button>
+            <button class="el-button el-button-primary el-button-sm" onclick="openCreateUserModal()"><i class="ri-user-add-line"></i> 新建系统用户</button>
           </div>
           <div class="table-responsive-box">
             <table class="corp-table">
@@ -1362,7 +1394,7 @@
 
   <!-- ================= 悬浮 Copilot 助手球 ================= -->
   <div class="floating-copilot-btn" title="唤起 AI 智能分析抽屉" onclick="toggleCopilotDrawer()">
-    <span>🤖</span>
+    <i class="ri-robot-2-fill" style="font-size: 16px;"></i>
     <span>AI 即席问数</span>
   </div>
 
@@ -1370,32 +1402,32 @@
   <div class="copilot-drawer" id="copilotDrawer">
     <div class="drawer-header">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <span>🤖</span>
+        <i class="ri-robot-2-line" style="color: #409eff; font-size: 17px;"></i>
         <span>AI Copilot 智能即席问数助手</span>
       </div>
-      <button class="el-button el-button-sm" onclick="toggleCopilotDrawer()">✕ 关闭</button>
+      <button class="el-button el-button-sm" onclick="toggleCopilotDrawer()"><i class="ri-close-line"></i> 关闭</button>
     </div>
     <div class="drawer-body" id="drawerChatArea">
       <div style="font-size: 12.5px; color: #606266; background: #f4f4f5; padding: 10px 12px; border-radius: 4px; line-height: 1.6;">
-        💡 无论在商品、订单还是仪表盘页面，随时在此向 AI 提问即可即席检索数仓并生成分析图表。
+        <i class="ri-lightbulb-line" style="color: #e6a23c; margin-right: 4px;"></i> 无论在商品、订单还是仪表盘页面，随时在此向 AI 提问即可即席检索数仓并生成分析图表。
       </div>
       <div>
-        <div style="font-size: 12px; font-weight: 700; color: #606266; margin-bottom: 6px;">⚡ 快速提问标签：</div>
+        <div style="font-size: 12px; font-weight: 700; color: #606266; margin-bottom: 6px;"><i class="ri-flashlight-line" style="color: #409eff; margin-right: 2px;"></i> 快速提问标签：</div>
         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-          <span class="query-tag-pill" onclick="askDrawerQuery('2018年销售额最高的前5个商品品类是什么？')">📈 品类销售额TOP5</span>
-          <span class="query-tag-pill" onclick="askDrawerQuery('统计2017到2018年每个月的订单总量趋势')">📅 月度订单走势</span>
-          <span class="query-tag-pill" onclick="askDrawerQuery('统计各种支付方式的订单金额与笔数分布')">💳 支付方式占比</span>
-          <span class="query-tag-pill" onclick="askDrawerQuery('统计不同购买频次的客户复购留存人数分布')">👥 客户复购留存</span>
-          <span class="query-tag-pill" onclick="askDrawerQuery('各省份的客单价分布排名前5是哪些？')">🏙️ 省份客单价分布</span>
-          <span class="query-tag-pill" onclick="askDrawerQuery('统计各省份的订单平均配送耗时（天数）排行')">🚚 配送时效排行</span>
-          <span class="query-tag-pill" onclick="askDrawerQuery('单价在1000元以上的高价值热销商品有哪些？')">💎 1000元以上商品</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('2018年销售额最高的前5个商品品类是什么？')"><i class="ri-bar-chart-grouped-line"></i> 品类销售额TOP5</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('统计2017到2018年每个月的订单总量趋势')"><i class="ri-calendar-line"></i> 月度订单走势</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('统计各种支付方式的订单金额与笔数分布')"><i class="ri-bank-card-line"></i> 支付方式占比</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('统计不同购买频次的客户复购留存人数分布')"><i class="ri-user-shared-line"></i> 客户复购留存</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('各省份的客单价分布排名前5是哪些？')"><i class="ri-map-pin-2-line"></i> 省份客单价分布</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('统计各省份的订单平均配送耗时（天数）排行')"><i class="ri-truck-line"></i> 配送时效排行</span>
+          <span class="query-tag-pill" onclick="askDrawerQuery('单价在1000元以上的高价值热销商品有哪些？')"><i class="ri-vip-diamond-line"></i> 1000元以上商品</span>
         </div>
       </div>
     </div>
     <div class="drawer-footer">
       <div style="display: flex; gap: 8px;">
         <input type="text" id="drawerInput" class="el-input" style="flex: 1;" placeholder="向 AI 提问数仓数据..." onkeyup="if(event.key==='Enter')submitDrawerAiQuery()">
-        <button class="el-button el-button-primary" onclick="submitDrawerAiQuery()">发送</button>
+        <button class="el-button el-button-primary" onclick="submitDrawerAiQuery()"><i class="ri-send-plane-2-fill"></i> 发送</button>
       </div>
     </div>
   </div>
@@ -1405,7 +1437,7 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <span class="modal-title-text">新增商品主数据档案 (Create Product)</span>
-        <button class="modal-close-btn" onclick="closeAddProductModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeAddProductModal()"><i class="ri-close-line"></i></button>
       </div>
       <div class="modal-body">
         <div class="form-group">
@@ -1442,7 +1474,7 @@
       </div>
       <div class="modal-footer">
         <button class="el-button" onclick="closeAddProductModal()">取 消</button>
-        <button class="el-button el-button-primary" onclick="submitCreateProduct()">确 定 新 增</button>
+        <button class="el-button el-button-primary" onclick="submitCreateProduct()"><i class="ri-add-line"></i> 确 定 新 增</button>
       </div>
     </div>
   </div>
@@ -1452,7 +1484,7 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <span class="modal-title-text">编辑商品主数据属性</span>
-        <button class="modal-close-btn" onclick="closeEditProductModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeEditProductModal()"><i class="ri-close-line"></i></button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="editProdId">
@@ -1460,7 +1492,7 @@
           <label>商品唯一编号 (只读)</label>
           <div style="display: flex; gap: 6px;">
             <input type="text" id="editProdIdDisplay" class="el-input" disabled style="background: #f5f7fa; font-family: monospace;">
-            <button class="el-button el-button-sm" onclick="copyProdId()">复制</button>
+            <button class="el-button el-button-sm" onclick="copyProdId()"><i class="ri-file-copy-line"></i> 复制</button>
           </div>
         </div>
         <div class="form-group">
@@ -1478,7 +1510,7 @@
       </div>
       <div class="modal-footer">
         <button class="el-button" onclick="closeEditProductModal()">取 消</button>
-        <button class="el-button el-button-primary" onclick="submitUpdateProduct()">保 存 更 新</button>
+        <button class="el-button el-button-primary" onclick="submitUpdateProduct()"><i class="ri-save-line"></i> 保 存 更 新</button>
       </div>
     </div>
   </div>
@@ -1488,11 +1520,11 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <span class="modal-title-text">配置大语言模型凭证 (BYOK 插件)</span>
-        <button class="modal-close-btn" onclick="closeKeyModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeKeyModal()"><i class="ri-close-line"></i></button>
       </div>
       <div class="modal-body">
         <div style="background: #ecf5ff; border: 1px solid #d9ecff; color: #409eff; padding: 10px 12px; border-radius: 3px; font-size: 12px; line-height: 1.6; margin-bottom: 14px;">
-          🔒 <b>本地凭据保护：</b>API Key 仅保存在浏览器 localStorage 沙箱中，仅在发起 Text2SQL 查询时本地读取，服务端不持久化私有凭证。
+          <i class="ri-shield-check-line" style="color: #67c23a; margin-right: 4px;"></i> <b>本地凭据隔离存储：</b>API Key 仅保存在浏览器 localStorage 沙箱中，仅在发起 Text2SQL 查询时本地读取，服务端不持久化私有凭证。
         </div>
         <div class="form-group">
           <label>选择服务提供商预设</label>
@@ -1505,14 +1537,14 @@
           <label>输入密钥 (API Key)</label>
           <div style="display: flex; gap: 6px;">
             <input type="password" id="userKeyInput" class="el-input" style="flex: 1;" placeholder="sk-...">
-            <button type="button" class="el-button" onclick="toggleKeyVisibility()">👁️ 明文</button>
+            <button type="button" class="el-button" onclick="toggleKeyVisibility()" id="keyVisibilityBtn"><i class="ri-eye-line"></i> 明文</button>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="el-button el-button-danger" onclick="clearKey()">清空已存 Key</button>
+        <button class="el-button el-button-danger" onclick="clearKey()"><i class="ri-delete-bin-line"></i> 清空已存 Key</button>
         <button class="el-button" onclick="closeKeyModal()">取 消</button>
-        <button class="el-button el-button-primary" onclick="saveKey()">保 存 并 应 用</button>
+        <button class="el-button el-button-primary" onclick="saveKey()"><i class="ri-save-line"></i> 保 存 并 应 用</button>
       </div>
     </div>
   </div>
@@ -1522,14 +1554,14 @@
     <div class="modal-dialog" style="width: 420px;">
       <div class="modal-header">
         <span class="modal-title-text" id="confirmModalTitle">操作确认提示</span>
-        <button class="modal-close-btn" onclick="closeCustomConfirm(false)">✕</button>
+        <button class="modal-close-btn" onclick="closeCustomConfirm(false)"><i class="ri-close-line"></i></button>
       </div>
       <div class="modal-body" id="confirmModalMessage" style="line-height: 1.6; color: #606266;">
         确定要执行该删除操作吗？
       </div>
       <div class="modal-footer">
         <button class="el-button" onclick="closeCustomConfirm(false)">取 消</button>
-        <button class="el-button el-button-danger" id="confirmModalOkBtn" onclick="closeCustomConfirm(true)">确 定 删 除</button>
+        <button class="el-button el-button-danger" id="confirmModalOkBtn" onclick="closeCustomConfirm(true)"><i class="ri-delete-bin-line"></i> 确 定 删 除</button>
       </div>
     </div>
   </div>
@@ -1539,7 +1571,7 @@
     <div class="modal-dialog" style="width: 440px;">
       <div class="modal-header">
         <span class="modal-title-text">流转订单履约状态</span>
-        <button class="modal-close-btn" onclick="closeOrderStatusModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeOrderStatusModal()"><i class="ri-close-line"></i></button>
       </div>
       <div class="modal-body">
         <div style="background: #f5f7fa; padding: 10px 12px; border-radius: 3px; margin-bottom: 14px;">
@@ -1562,7 +1594,7 @@
       </div>
       <div class="modal-footer">
         <button class="el-button" onclick="closeOrderStatusModal()">取 消</button>
-        <button class="el-button el-button-primary" onclick="submitOrderStatusChange()">确 认 流 转</button>
+        <button class="el-button el-button-primary" onclick="submitOrderStatusChange()"><i class="ri-check-line"></i> 确 认 流 转</button>
       </div>
     </div>
   </div>
@@ -1572,7 +1604,7 @@
     <div class="modal-dialog" style="width: 460px;">
       <div class="modal-header">
         <span class="modal-title-text">当前登录管理员档案 (RBAC)</span>
-        <button class="modal-close-btn" onclick="closeUserProfileModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeUserProfileModal()"><i class="ri-close-line"></i></button>
       </div>
       <div class="modal-body">
         <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #ebeef5;">
@@ -1603,7 +1635,7 @@
       </div>
       <div class="modal-footer">
         <button class="el-button" onclick="closeUserProfileModal()">关 闭</button>
-        <button class="el-button el-button-primary" onclick="closeUserProfileModal(); Toast.info('系统会话凭证校验正常');">刷 新 权 限</button>
+        <button class="el-button el-button-primary" onclick="closeUserProfileModal(); Toast.info('系统会话凭证校验正常');"><i class="ri-refresh-line"></i> 刷 新 权 限</button>
       </div>
     </div>
   </div>
@@ -1613,7 +1645,7 @@
     <div class="modal-dialog" style="width: 440px;">
       <div class="modal-header">
         <span class="modal-title-text">新增企业中台账号</span>
-        <button class="modal-close-btn" onclick="closeCreateUserModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeCreateUserModal()"><i class="ri-close-line"></i></button>
       </div>
       <div class="modal-body">
         <div class="form-group">
@@ -1640,7 +1672,7 @@
       </div>
       <div class="modal-footer">
         <button class="el-button" onclick="closeCreateUserModal()">取 消</button>
-        <button class="el-button el-button-primary" onclick="submitCreateUser()">确 定 建 权</button>
+        <button class="el-button el-button-primary" onclick="submitCreateUser()"><i class="ri-user-add-line"></i> 确 定 建 权</button>
       </div>
     </div>
   </div>
@@ -1744,7 +1776,7 @@
       bar.innerHTML = Object.keys(openedTabs).map(id => {
         const item = openedTabs[id];
         const isActive = id === activePageId;
-        const closeBtn = id !== 'dashboard' ? `<span class="tag-close-icon" onclick="closeTagTab('${id}', event)">✕</span>` : '';
+        const closeBtn = id !== 'dashboard' ? `<span class="tag-close-icon" onclick="closeTagTab('${id}', event)"><i class="ri-close-line"></i></span>` : '';
         return `
           <div class="tag-item ${isActive ? 'active' : ''}" onclick="switchPage('${id}', '${item.p1}', '${item.p2}')">
             <span>${item.title}</span>
@@ -2226,7 +2258,7 @@
       chatArea.insertAdjacentHTML('beforeend', `<div class="chat-bubble-user">${q}</div>`);
 
       const loadId = 'load-' + Date.now();
-      chatArea.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" id="${loadId}" style="color: #909399;">⏳ 正在加权外键图多表拓扑寻路并执行 AST 安全护栏规则...</div>`);
+      chatArea.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" id="${loadId}" style="color: #909399;"><i class="ri-loader-4-line ri-spin" style="margin-right: 4px;"></i> 正在加权外键图多表拓扑寻路并执行 AST 安全护栏规则...</div>`);
       chatArea.scrollTop = chatArea.scrollHeight;
 
       try {
@@ -2238,7 +2270,7 @@
         });
         const data = await res.json();
         document.getElementById(loadId)?.remove();
-        renderAiResult(chatArea, data);
+        renderAiResult(chatArea, data, q);
       } catch (e) {
         document.getElementById(loadId)?.remove();
         chatArea.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" style="border-left: 3px solid #f56c6c;"><b style="color: #f56c6c;">请求失败:</b> ${e.message}</div>`);
@@ -2246,7 +2278,7 @@
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    function renderAiResult(container, resp) {
+    function renderAiResult(container, resp, userQuery = '') {
       chartCounter++;
       const chartId = 'aiChart-' + chartCounter;
       const isOk = resp.status === 'SUCCESS';
@@ -2259,18 +2291,25 @@
       if (!isOk) {
         html += `
           <div style="color: #f56c6c; font-weight: 700; margin-bottom: 6px;">
-            ⚠️ 语句被安全沙箱拦截或执行异常 [${resp.status}]
+            <i class="ri-error-warning-line"></i> 语句被安全沙箱拦截或执行异常 [${resp.status}]
           </div>
           <div style="font-size: 13px; color: #606266;">${resp.message || '查询未通过校验'}</div>
         `;
       } else {
         const ms = (resp.timings && resp.timings.totalMs) || resp.latencyMs || 290;
         html += `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span class="el-tag el-tag-success">✓ 数仓计算完成 (耗时: ${ms}ms)</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <span class="el-tag el-tag-success"><i class="ri-checkbox-circle-line"></i> 数仓计算完成 (耗时: ${ms}ms)</span>
             <div class="view-segmented-group" id="btn-group-${chartId}">
-              <button class="view-segmented-btn active" id="btn-table-${chartId}" onclick="toggleAiView('${chartId}', false)">表格视图</button>
-              <button class="view-segmented-btn" id="btn-chart-${chartId}" onclick="toggleAiView('${chartId}', true)">📊 ECharts 图表视图</button>
+              <button class="view-segmented-btn active" id="btn-table-${chartId}" onclick="toggleAiView('${chartId}', 'table')">
+                <i class="ri-table-line"></i> 表格明细
+              </button>
+              <button class="view-segmented-btn" id="btn-chart-${chartId}" onclick="toggleAiView('${chartId}', '2d')">
+                <i class="ri-bar-chart-2-line"></i> 2D 平面图表
+              </button>
+              <button class="view-segmented-btn" id="btn-chart3d-${chartId}" onclick="toggleAiView('${chartId}', '3d')">
+                <i class="ri-box-3-line"></i> 3D 三维坐标系
+              </button>
             </div>
           </div>
         `;
@@ -2290,6 +2329,10 @@
             </table>
           </div>
           <div id="${chartId}" style="height: 350px; width: 100%; display: none; margin-top: 12px;"></div>
+          <div id="hint-3d-${chartId}" class="chart-3d-hint" style="display: none;">
+            <i class="ri-compass-3-line"></i>
+            <span>已启用 WebGL 三维空间直角坐标系 (X-Y-Z 轴立体投影)。支持按住鼠标左键 360° 旋转视角、滚轮缩放、右键平移。</span>
+          </div>
         `;
       }
 
@@ -2297,33 +2340,55 @@
       container.insertAdjacentHTML('beforeend', html);
 
       if (rows && rows.length > 0) {
-        aiChartRegistry[chartId] = { columns, rows };
+        aiChartRegistry[chartId] = { columns, rows, activeMode: 'table' };
+        // 如果提问中明确要求三维或 3D，自动开启 3D 三维坐标系视图
+        if (userQuery && /(三维|3d|立体|坐标系)/i.test(userQuery)) {
+          setTimeout(() => toggleAiView(chartId, '3d'), 50);
+        }
       }
     }
 
     const aiChartRegistry = {};
 
-    function toggleAiView(chartId, showChart) {
+    function toggleAiView(chartId, mode) {
       const chartEl = document.getElementById(chartId);
       const tableEl = document.getElementById('table-wrap-' + chartId);
+      const hint3dEl = document.getElementById('hint-3d-' + chartId);
       const btnTable = document.getElementById('btn-table-' + chartId);
       const btnChart = document.getElementById('btn-chart-' + chartId);
+      const btnChart3d = document.getElementById('btn-chart3d-' + chartId);
 
-      if (showChart) {
-        if (chartEl) chartEl.style.display = 'block';
-        if (tableEl) tableEl.style.display = 'none';
-        if (btnTable) btnTable.classList.remove('active');
-        if (btnChart) btnChart.classList.add('active');
+      // 兼容旧版布尔值入参
+      if (mode === true) mode = '2d';
+      if (mode === false) mode = 'table';
 
-        const cfg = aiChartRegistry[chartId];
-        if (cfg) {
-          initAiChart(chartId, cfg.columns, cfg.rows);
-        }
-      } else {
+      const cfg = aiChartRegistry[chartId];
+      if (!cfg) return;
+      cfg.activeMode = mode;
+
+      if (mode === 'table') {
         if (chartEl) chartEl.style.display = 'none';
         if (tableEl) tableEl.style.display = 'block';
+        if (hint3dEl) hint3dEl.style.display = 'none';
         if (btnTable) btnTable.classList.add('active');
         if (btnChart) btnChart.classList.remove('active');
+        if (btnChart3d) btnChart3d.classList.remove('active');
+      } else if (mode === '2d') {
+        if (chartEl) chartEl.style.display = 'block';
+        if (tableEl) tableEl.style.display = 'none';
+        if (hint3dEl) hint3dEl.style.display = 'none';
+        if (btnTable) btnTable.classList.remove('active');
+        if (btnChart) btnChart.classList.add('active');
+        if (btnChart3d) btnChart3d.classList.remove('active');
+        initAiChart(chartId, cfg.columns, cfg.rows);
+      } else if (mode === '3d') {
+        if (chartEl) chartEl.style.display = 'block';
+        if (tableEl) tableEl.style.display = 'none';
+        if (hint3dEl) hint3dEl.style.display = 'flex';
+        if (btnTable) btnTable.classList.remove('active');
+        if (btnChart) btnChart.classList.remove('active');
+        if (btnChart3d) btnChart3d.classList.add('active');
+        initAiChart3D(chartId, cfg.columns, cfg.rows);
       }
     }
 
@@ -2331,10 +2396,15 @@
       const chartEl = document.getElementById(chartId);
       if (!chartEl) return;
 
-      let myChart = echarts.getInstanceByDom(chartEl);
-      if (!myChart) {
-        myChart = echarts.init(chartEl);
-      }
+      chartEl.style.height = '350px';
+
+      // 切换视图时清空旧实例，防止 Canvas 与 WebGL 上下文发生图层冲突
+      try {
+        const existing = echarts.getInstanceByDom(chartEl);
+        if (existing) existing.dispose();
+      } catch (e) { console.warn(e); }
+
+      const myChart = echarts.init(chartEl);
 
       const isArrayRow = rows.length > 0 && Array.isArray(rows[0]);
 
@@ -2454,6 +2524,187 @@
       setTimeout(() => myChart.resize(), 30);
     }
 
+    // ================= ECharts GL 三维空间直角坐标系 (3D Bar Chart) =================
+    function initAiChart3D(chartId, columns, rows) {
+      const chartEl = document.getElementById(chartId);
+      if (!chartEl) return;
+
+      chartEl.style.height = '400px';
+
+      // 切换至 WebGL 实例前彻底清理 2D Canvas 实例
+      try {
+        const existing = echarts.getInstanceByDom(chartEl);
+        if (existing) existing.dispose();
+      } catch (e) { console.warn(e); }
+
+      const myChart = echarts.init(chartEl);
+
+      const isArrayRow = rows.length > 0 && Array.isArray(rows[0]);
+
+      let yIdx = -1;
+      for (let i = columns.length - 1; i >= 0; i--) {
+        const val = isArrayRow ? rows[0][i] : rows[0][columns[i]];
+        const numStr = String(val || '').replace(/[^\d.-]/g, '');
+        if (numStr !== '' && !isNaN(parseFloat(numStr))) {
+          yIdx = i;
+          break;
+        }
+      }
+      if (yIdx === -1) yIdx = columns.length > 1 ? 1 : 0;
+
+      let xIdx = 0;
+      for (let i = 0; i < columns.length; i++) {
+        if (i === yIdx) continue;
+        const colName = String(columns[i]).toLowerCase();
+        if (colName.includes('id') && columns.length > 2) continue;
+        xIdx = i;
+        break;
+      }
+
+      const xCol = columns[xIdx];
+      const yCol = columns[yIdx];
+
+      const xData = rows.map(r => {
+        const raw = isArrayRow ? r[xIdx] : r[xCol];
+        return String(raw || '');
+      });
+
+      const yData = rows.map(r => {
+        const raw = isArrayRow ? r[yIdx] : r[yCol];
+        const numStr = String(raw || '').replace(/[^\d.-]/g, '');
+        const val = parseFloat(numStr);
+        return isNaN(val) ? 0 : val;
+      });
+
+      const maxVal = Math.max(...yData, 1);
+
+      const option3D = {
+        title: {
+          text: '三维空间直角坐标系 (' + yCol + ')',
+          subtext: 'X 轴: ' + xCol + ' | Y 轴: 空间维度 | Z 轴: ' + yCol + ' (三维柱体)',
+          left: 'center',
+          top: 6,
+          textStyle: { fontSize: 13, fontWeight: '700', color: '#303133' },
+          subtextStyle: { fontSize: 11, color: '#909399' }
+        },
+        tooltip: {
+          show: true,
+          formatter: function(params) {
+            const idx = params.value[0];
+            const name = xData[idx] || '';
+            const val = Number(params.value[2]).toLocaleString();
+            return `<b>${name}</b><br/>${yCol}: <b>${val}</b>`;
+          }
+        },
+        visualMap: {
+          show: true,
+          min: 0,
+          max: maxVal,
+          inRange: {
+            color: ['#80c1ff', '#409eff', '#1989fa', '#0052cc']
+          },
+          textStyle: { color: '#606266', fontSize: 11 },
+          orient: 'horizontal',
+          left: 'center',
+          bottom: 6,
+          formatter: function(v) { return Number(Math.round(v)).toLocaleString(); }
+        },
+        xAxis3D: {
+          type: 'category',
+          data: xData,
+          name: xCol,
+          nameTextStyle: { color: '#606266', fontSize: 11 },
+          axisLine: { lineStyle: { color: '#909399' } },
+          axisLabel: {
+            interval: 0,
+            textStyle: { color: '#606266', fontSize: 11 },
+            formatter: function(val) {
+              if (!val) return '';
+              if (val.includes(' (')) return val.replace(' (', '\n(');
+              if (val.length > 9) return val.substring(0, 8) + '\n' + val.substring(8);
+              return val;
+            }
+          }
+        },
+        yAxis3D: {
+          type: 'category',
+          data: ['指标统计'],
+          name: '维度',
+          nameTextStyle: { color: '#909399', fontSize: 10 },
+          axisLabel: { show: false },
+          axisTick: { show: false },
+          axisLine: { lineStyle: { color: '#dcdfe6' } }
+        },
+        zAxis3D: {
+          type: 'value',
+          name: yCol,
+          nameTextStyle: { color: '#606266', fontSize: 11 },
+          axisLine: { lineStyle: { color: '#909399' } },
+          axisLabel: {
+            textStyle: { color: '#606266', fontSize: 10 },
+            formatter: function(val) {
+              return Number(val).toLocaleString();
+            }
+          }
+        },
+        grid3D: {
+          boxWidth: Math.min(Math.max(xData.length * 18, 90), 160),
+          boxDepth: 30,
+          boxHeight: 65,
+          viewControl: {
+            projection: 'perspective',
+            autoRotate: false,
+            alpha: 22,
+            beta: 25,
+            distance: 190,
+            minDistance: 80,
+            maxDistance: 350
+          },
+          light: {
+            main: {
+              intensity: 1.3,
+              shadow: true,
+              alpha: 35,
+              beta: 45
+            },
+            ambient: {
+              intensity: 0.4
+            }
+          }
+        },
+        series: [{
+          type: 'bar3D',
+          data: xData.map((_, i) => [i, 0, yData[i]]),
+          shading: 'lambert',
+          bevelSize: 0.3,
+          bevelSmoothness: 2,
+          label: {
+            show: true,
+            textStyle: {
+              color: '#1f2d3d',
+              fontSize: 10,
+              fontWeight: 'bold',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              borderRadius: 2,
+              padding: [2, 4]
+            },
+            formatter: function(p) {
+              return Number(p.value[2]).toLocaleString();
+            }
+          }
+        }]
+      };
+
+      try {
+        myChart.setOption(option3D, true);
+        setTimeout(() => myChart.resize(), 50);
+      } catch (err) {
+        console.error('3D Chart render failed:', err);
+        Toast.info('当前环境三维渲染限制，已自动回退至 2D 统计图');
+        initAiChart(chartId, columns, rows);
+      }
+    }
+
     // ================= 悬浮 Copilot 抽屉 =================
     function toggleCopilotDrawer() {
       document.getElementById('copilotDrawer').classList.toggle('active');
@@ -2469,7 +2720,7 @@
       area.insertAdjacentHTML('beforeend', `<div class="chat-bubble-user">${q}</div>`);
 
       const loadId = 'drawerLoad-' + Date.now();
-      area.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" id="${loadId}" style="color: #909399;">⏳ 正在分析数仓拓扑与指标口径...</div>`);
+      area.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" id="${loadId}" style="color: #909399;"><i class="ri-loader-4-line ri-spin" style="margin-right: 4px;"></i> 正在分析数仓拓扑与指标口径...</div>`);
       area.scrollTop = area.scrollHeight;
 
       try {
@@ -2481,7 +2732,7 @@
         });
         const data = await res.json();
         document.getElementById(loadId)?.remove();
-        renderAiResult(area, data);
+        renderAiResult(area, data, q);
       } catch (e) {
         document.getElementById(loadId)?.remove();
         area.insertAdjacentHTML('beforeend', `<div class="chat-bubble-ai" style="color: #f56c6c;">提问失败: ${e.message}</div>`);
@@ -2508,7 +2759,14 @@
     }
     function toggleKeyVisibility() {
       const el = document.getElementById('userKeyInput');
-      el.type = el.type === 'password' ? 'text' : 'password';
+      const btn = document.getElementById('keyVisibilityBtn');
+      if (el.type === 'password') {
+        el.type = 'text';
+        if (btn) btn.innerHTML = '<i class="ri-eye-off-line"></i> 密文';
+      } else {
+        el.type = 'password';
+        if (btn) btn.innerHTML = '<i class="ri-eye-line"></i> 明文';
+      }
     }
     function setPresetKey(type) {
       const el = document.getElementById('userKeyInput');
