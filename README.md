@@ -79,7 +79,7 @@ flowchart TD
 | **AI 问数工作台** | 业务人员即席探索性取数（EDA） | 底部常驻锚定输入栏 + 历史会话流式吞吐 | 杜绝传统聊天框随长表格无限下沉断层的问题 |
 | **动态图表自动识别** | GMV、品类销量、转化率趋势分析 | ECharts 5 自适应引擎 + 维度数值自动降维嗅探 | 一键在数据宽表与柱状图/折线图之间无损切换 |
 | **生产级 AST 安全沙箱** | 防御恶意删库、高权限越权与重度慢查询 | JSqlParser AST 语法树遍历 + 行级 LIMIT 强制注入 | 100% 阻断 `DROP/DELETE/UNION` 等高危注入，校验延迟仅 1.2ms |
-| **冷启动高可用探针** | 离线演示、面试答辩与故障自愈 | `DatabaseProbe` 智能健康探测 + 预热缓存降级 | 消除脱机黑屏崩溃风险，演示环境 0ms 秒级启动 |
+| **冷启动高可用探针** | 离线演示、网络隔离与故障自愈 | `DatabaseProbe` 智能健康探测 + 预热缓存降级 | 消除脱机黑屏崩溃风险，演示环境 0ms 秒级启动 |
 
 ---
 
@@ -118,7 +118,7 @@ flowchart TD
 Sprint 1: 脚手架搭建与基础设施 (CRUD & DAL) ──────> [已完成] 验证 78 个核心类依赖，落地商品/订单全生命周期
 Sprint 2: Text2SQL 核心流水线集成 (Core Pipeline) ─> [已完成] 拓扑图检索、口径注入、AST 沙箱与 253 个全量单测
 Sprint 3: 一体化中台 UI 与 ECharts 图表 (UI/UX) ───> [已完成] 5年企业级工作台、TagsView、Tooltip 浮层与一键复制
-Sprint 4: 工程归档、答辩物料与量化沉淀 (Delivery) ──> [已完成] 软件过程文档、架构设计书、答辩 PPT 与录屏脚本
+Sprint 4: 工程归档、规范落地与量化沉淀 (Delivery) ──> [已完成] 软件工程说明书、架构设计手册与技术总结
 ```
 
 ### 自动化测试覆盖与质量基准
@@ -136,11 +136,10 @@ Text2Sql-apply/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                     # GitHub Actions CI 自动化持续集成流水线
-├── docs/                              # 课程答辩与软件工程过程全套文档
+├── docs/                              # 系统技术架构与工程过程文档
 │   ├── ARCHITECTURE.md                # 完整技术架构设计与分层规范
 │   ├── SOFTWARE_PROCESS.md            # 敏捷 Scrum 软件过程与 4 次 Sprint 演进纪要
-│   ├── PROJECT_SUMMARY.md             # 项目研发总结与指标交付报告
-│   └── PPT_AND_VIDEO_GUIDE.md         # 课程答辩 PPT 演示结构与录屏操作脚本
+│   └── PROJECT_SUMMARY.md             # 工程总结与核心架构决策解析
 ├── src/
 │   ├── main/
 │   │   ├── java/
@@ -205,17 +204,16 @@ java -jar target/ecommerce-admin-agent-1.0.0.jar
 
 ---
 
-## 📚 答辩文档与交付物索引
+## 📚 技术架构与设计文档索引
 
-本项目为高校课程设计、毕业答辩及大厂面试提供了**工业级配套文档体系**：
+本项目提供了完备的工业级工程与技术架构设计文档体系：
 
-- 📑 **架构设计手册**：请查阅 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- 🔄 **敏捷软件过程纪要**：请查阅 [docs/SOFTWARE_PROCESS.md](docs/SOFTWARE_PROCESS.md)
-- 📊 **指标交付与总结报告**：请查阅 [docs/PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md)
-- 🎙️ **答辩演示与录屏脚本**：请查阅 [docs/PPT_AND_VIDEO_GUIDE.md](docs/PPT_AND_VIDEO_GUIDE.md)
+- 📑 **架构设计手册**：请查阅 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)（六层解耦模型、外键图路由与 AST 安全沙箱机制）
+- 🔄 **敏捷软件过程纪要**：请查阅 [docs/SOFTWARE_PROCESS.md](docs/SOFTWARE_PROCESS.md)（敏捷 Scrum 模型 4 次 Sprint 需求与验收标准矩阵）
+- 📊 **工程总结与架构决策**：请查阅 [docs/PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md)（技术选型权衡、架构追问与量化指标深度解析）
 
 ---
 
 ## 📄 开源许可证
 
-本项目基于 [MIT License](LICENSE) 协议开源，供学习、课程交流及企业技术方案参考。
+本项目基于 [MIT License](LICENSE) 协议开源，欢迎自由查阅、二次开发及企业技术方案参考。
