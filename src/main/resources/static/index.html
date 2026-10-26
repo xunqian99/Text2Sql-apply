@@ -795,10 +795,20 @@
           }]
         });
 
-        // 渲染品类环形饼图（上抬中心位置 + 缩小外半径，预留充足图例空隙，彻底杜绝重叠）
+        // 渲染品类环形饼图（扇区常显百分比数值 + 上移中心位置，无需悬浮即可清晰查看各品类占比）
         const pieEl = document.getElementById('dashboardPieChart');
         const pieChart = echarts.init(pieEl);
+        const totalItems = (d.categoryDistribution || []).reduce((acc, cur) => acc + (cur.value || 0), 0);
+
         pieChart.setOption({
+          title: {
+            text: '总计',
+            subtext: totalItems.toLocaleString() + ' 件',
+            left: 'center',
+            top: '31%',
+            textStyle: { fontSize: 13, fontWeight: '600', color: '#262626' },
+            subtextStyle: { fontSize: 11, color: '#8c8c8c', fontWeight: 'normal' }
+          },
           tooltip: {
             trigger: 'item',
             formatter: '{b}: <b>{c} 件</b> ({d}%)'
@@ -815,9 +825,18 @@
             name: '销量占比',
             type: 'pie',
             center: ['50%', '36%'],
-            radius: ['40%', '58%'],
+            radius: ['34%', '62%'],
             avoidLabelOverlap: true,
-            label: { show: false },
+            label: {
+              show: true,
+              position: 'inside',
+              formatter: '{d}%',
+              color: '#ffffff',
+              fontSize: 11,
+              fontWeight: 'bold',
+              textShadowColor: 'rgba(0, 0, 0, 0.4)',
+              textShadowBlur: 2
+            },
             emphasis: {
               label: {
                 show: true,
